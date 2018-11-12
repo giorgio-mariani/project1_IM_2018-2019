@@ -1,0 +1,5 @@
+video\ sequences/**
+src/depths/**
+other/opencv/
+other/original_software/
+**.pyc
