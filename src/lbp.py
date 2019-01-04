@@ -3,6 +3,7 @@
 Loopy Belief Propagation
 ''' 
 import numpy as np
+
 import cv2
 import params
 import compute_energy as ce
@@ -79,7 +80,6 @@ def LBP(energy_data, edge_weights):
     return np.uint16(B.argmin(axis=-1))
 
 
-
 def _LBP_iteration(D, M, lambda_weights, height, width, label_count):
     h, w, k = height, width, label_count
     
@@ -97,7 +97,7 @@ def _LBP_iteration(D, M, lambda_weights, height, width, label_count):
     hf[do] = cv2.warpAffine(H-M[up], params.AFFINE_DIR[up], dsize=(w, h))
     hf[le] = cv2.warpAffine(H-M[ri], params.AFFINE_DIR[ri], dsize=(w, h))
     hf[ri] = cv2.warpAffine(H-M[le], params.AFFINE_DIR[le], dsize=(w, h))
-
+    
     for j in directions:
         m[j] = np.array(hf[j])
         

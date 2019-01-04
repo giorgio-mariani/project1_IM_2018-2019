@@ -7,26 +7,7 @@ import numpy as np
 import params
 
 
-def load_image_depth(filename, width, height):
-    import struct
-    with open(filename, "rb") as f:
-        def read_float():
-            bs = f.read(4)
-            if bs=="":
-                return None 
-            else:
-                return struct.unpack('f', bs)[0]
-        
-        I = np.zeros([height, width], dtype=np.float32)
-        h, w = 0, 0
-        disp = read_float()
-        while disp is not None:
-            I[h,w] = disp
-            
-            w = (w + 1) % width
-            h = h + 1 if w==0 else h 
-            disp = read_float()            
-    return I
+
 
 #------------------------------------------------------------------------------
 class Camera():
@@ -74,6 +55,9 @@ class Camera():
                 f.readline()
                 f.readline()
         return K_sequence, R_sequence, T_sequence
+
+    def __len__(self):
+        return len(self.Ts)
 
 #------------------------------------------------------------------------------
 class PictureSequence():
@@ -129,20 +113,25 @@ class PictureSequence():
     
 #------------------------------------------------------------------------------
 class DepthSequence():
-    def __init__(self, directory, pic_sequence):
+    def __init__(self, directory, pic_sequence, maxlength=None):
         
         assert isinstance(pic_sequence, PictureSequence)
         assert type(directory) == str
-        
-        self._depthfiles = self._get_depth_files(directory, pic_sequence)
+        if maxlength is not None : assert type(maxlength) == int
+
+        self._depthfiles = self._get_depth_files(directory, pic_sequence, maxlength)
         self.height = pic_sequence.height
         self.width = pic_sequence.width
         
-    def _get_depth_files(self, directory_name, pic_sequence):
+    def _get_depth_files(self, directory_name, pic_sequence, maxlength):
         ext = '.npy'
         seq_files = []
+        if maxlength is None or maxlength < len(pic_sequence):
+            length = len(pic_sequence)
+        else:
+            length = maxlength
 
-        for i in range(len(pic_sequence)):
+        for i in range(length):
             filename = pic_sequence.get_filename(i, extension=False)
             seq_files.append(os.path.join(directory_name, filename+ext))
                     
@@ -174,7 +163,86 @@ def show_depthmap(depth_map, secs=0, close_after=True):
     M = depth_map.max()
     img = np.uint8((depth_map-m)/(M-m)*255)
     show_image(img, secs, close_after)
+    
+def load_image_depth(filename, width, height):
+    import struct
+    with open(filename, "rb") as f:
+        def read_float():
+            bs = f.read(4)
+            if bs=="":
+                return None 
+            else:
+                return struct.unpack('f', bs)[0]
+        
+        I = np.zeros([height, width], dtype=np.float32)
+        h, w = 0, 0
+        disp = read_float()
+        while disp is not None:
+            I[h,w] = disp
+            
+            w = (w + 1) % width
+            h = h + 1 if w==0 else h 
+            disp = read_float()            
+    return I
 
+
+def debug_depth_estimation(
+        camera_file,
+        source_folder,
+        depths_folder=None,
+        height=300,
+        width=400,
+        **options):
+    
+    import lbp
+    import initialization as init
+    import compute_energy as ce
+    import params
+    
+    sequence = PictureSequence(
+        source_folder, '.jpg',
+        height=height, 
+        width=width)
+
+    camera = Camera(
+            camera_file, 
+            height=sequence.height, 
+            width=sequence.width)
+    
+    WINDOW_SIZE = (1920, 1080)
+    USE_BUNDLE = depths_folder != None
+    
+    SHOW_LAMBDA_WEIGTHS = options.get("show_lambda",False)
+    SHOW_DEPTH_ESTIMATION_PROCESS = options.get("show_depth_levels",False)
+    SHOW_DEPTH_INIT = options.get("show_init",False)
+    SHOW_DEPTH_LBP = options.get("show_lbp",False)
+    FRAME_INDEX =  options.get("frame",0)
+    
+    if USE_BUNDLE:
+        dep_sequence = DepthSequence(depths_folder, sequence)
+        D = ce.compute_energy(camera, FRAME_INDEX, sequence, dep_sequence)
+    else:
+        D = ce.compute_energy(camera, FRAME_INDEX,sequence)
+    
+    lambda_weights = ce.lambda_factor(np.float32(sequence[FRAME_INDEX]))
+    
+    if SHOW_LAMBDA_WEIGTHS:
+        for i in range(4):
+            show_depthmap(cv2.resize(lambda_weights[i], WINDOW_SIZE)) 
+    
+    if SHOW_DEPTH_ESTIMATION_PROCESS:
+        for i in range(params.DEPTH_LEVELS):
+            show_depthmap(cv2.resize(D[i], WINDOW_SIZE), 100, False)
+        cv2.destroyAllWindows()
+    
+    if SHOW_DEPTH_INIT:
+        bundle = np.float32(D.argmin(axis=0))
+        show_depthmap(cv2.resize(bundle, WINDOW_SIZE))
+    
+    if SHOW_DEPTH_LBP:
+        lbp = np.float32(lbp.LBP(D, lambda_weights))  
+        show_depthmap(cv2.resize(lbp, WINDOW_SIZE))
+        
 ###############################################################################
 
 def test_projection():

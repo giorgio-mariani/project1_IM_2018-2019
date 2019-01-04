@@ -1,0 +1,17 @@
+[0] Config.pm:304> INFO - This is Biber 2.12
+[1] Config.pm:307> INFO - Logfile is 'main.blg'
+[78] biber-MSWIN64:315> INFO - === 
+[243] Biber.pm:371> INFO - Reading 'main.bcf'
+[479] Biber.pm:889> INFO - Found 5 citekeys in bib section 0
+[544] Biber.pm:4093> INFO - Processing section 0
+[612] Biber.pm:4254> INFO - Looking for bibtex format file 'references.bib' for section 0
+[619] bibtex.pm:1523> INFO - LaTeX decoding ...
+[644] bibtex.pm:1340> INFO - Found BibTeX data source 'references.bib'
+[734] Utils.pm:193> WARN - I didn't find a database entry for crossref 'DBLP:conf/cvpr/2007' in entry 'Zhang2007' - ignoring (section 0)
+[754] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[754] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[754] Biber.pm:3921> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'en-US'
+[754] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
+[815] bbl.pm:636> INFO - Writing 'main.bbl' with encoding 'UTF-8'
+[820] bbl.pm:739> INFO - Output to main.bbl
+[839] Biber.pm:110> INFO - WARNINGS: 1

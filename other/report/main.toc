@@ -1,0 +1,76 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {english}{}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {1}Aims and Context}{3}{chapter.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.1}Introduction}{3}{section.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.2}Proposed Approach}{3}{section.1.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{Camera parameter estimation:}{4}{Item.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{Depth-maps initialization:}{4}{Item.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{Depth-maps bundle optimization:}{4}{Item.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{Depth-maps space-time fusion:}{4}{Item.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.3}Related Work}{4}{section.1.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.3.1}Previous Work}{5}{subsection.1.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.3.2}Future Work}{5}{subsection.1.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.3.3}Neural Network Approaches}{5}{subsection.1.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {2}Project Details}{6}{chapter.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.1}The Architecture}{6}{section.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.1.1}Dependencies and Third Party Libraries}{6}{subsection.2.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{NumPy:}{6}{subsection.2.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{OpenCV:}{6}{subsection.2.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.2}Approach in Detail}{6}{section.2.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2.1}Initialization Phase}{6}{subsection.2.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{}{7}{subsection.2.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2.2}Bundle Optimization Phase}{7}{subsection.2.2.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2.3}Space-Time Fusion}{7}{subsection.2.2.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.3}Lessons Learned}{7}{section.2.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {3}System Documentation}{8}{chapter.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.1}Dependencies Installation}{8}{section.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.2}Running the System}{8}{section.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.2.1}Special Folders and Files}{8}{subsection.3.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{Configuration File.}{8}{subsection.3.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.3}Python Modules}{9}{section.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.3.1}\texttt {compute\_energy}}{9}{subsection.3.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.3.2}\texttt {estimate}}{9}{subsection.3.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.3.3}\texttt {lbp}}{9}{subsection.3.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.3.4}\texttt {utils}}{9}{subsection.3.3.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.3.5}\texttt {params}}{9}{subsection.3.3.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {4}Summary}{10}{chapter.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {A}Supplementary Materials}{11}{appendix.A}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {A.1}Loopy Belief Propagation Algorithm}{11}{section.A.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{References}{12}{appendix*.3}
