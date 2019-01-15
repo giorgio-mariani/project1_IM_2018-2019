@@ -10,7 +10,7 @@ import params
 
 
 ###############################################################################
-def compute_energy( 
+def compute_energy_data( 
         camera, 
         frame_index,
         pic_sequence, 
@@ -41,7 +41,7 @@ def compute_energy(
     I_t = np.float32(pic_sequence[t])
     
     # initialize indices coordinates
-    x = homogeneous_coord_grid(h,w) #[3, h, w]
+    x_h = homogeneous_coord_grid(h,w) #[3, h, w]
     d = np.zeros([h, w], dtype=np.float32) #[h, w]
     
     # initialize Likelihood table L 
@@ -62,18 +62,18 @@ def compute_energy(
             d[:,:] = depth_values[level] 
 
             # compute conjugate pixel position using the depth level at time t
-            x_prime = conujugate_coordinates(
+            x_prime_h = conujugate_coordinates(
                     camera=camera,
                     pose1=t,
                     pose2=t_prime,
-                    coorsxy=x, 
+                    coorsxy=x_h, 
                     d=d)
             
             # remap the image w.r.t. the projected pixels
-            x_prime_digested = np.transpose(x_prime[:2,:,:], [1,2,0])
+            x_prime = np.transpose(x_prime_h[:2,:,:], [1,2,0])
             I_t_prime_projected = cv2.remap(
                     src=I_t_prime, 
-                    map1=x_prime_digested, 
+                    map1=x_prime, 
                     map2=None, 
                     interpolation=cv2.INTER_NEAREST, 
                     borderValue=[128, 128, 128])
@@ -94,7 +94,7 @@ def compute_energy(
                 depth_indices = dep_sequence[t_prime] # get prev. estimated depth 
                 depth_indices_projected = cv2.remap(
                         src=depth_indices, 
-                        map1=x_prime_digested, 
+                        map1=x_prime, 
                         map2=None, 
                         interpolation=cv2.INTER_NEAREST, 
                         borderValue=int(levels/2.0))
@@ -103,16 +103,16 @@ def compute_energy(
                 np.take(depth_values, depth_indices_projected, out=d)
                 
                 # project back from t_prime to t using prev. estimated depth values
-                projected_x_prime = conujugate_coordinates(
+                projected_x_prime_h = conujugate_coordinates(
                         camera=camera,
                         pose1=t_prime,
                         pose2=t,
-                        coorsxy=x_prime,
+                        coorsxy=x_prime_h,
                         d=d)
     
                 # compute norm of diff. between original and projected coord 
                 color_difference_norm = np.sum(
-                    np.square(x - projected_x_prime), 
+                    np.square(x_h - projected_x_prime_h), 
                     axis=0,
                     keepdims=False)
                 
@@ -192,10 +192,10 @@ def L2_norm(img_a, img_b, keepdims=True):
     
     Arguments:
       * img_a - first image, numpy.array 
-        of type np.float32 [h, w, <x>]
+        of type np.float32 [h, w, 3]
         
       * uImg_b - second image, numpy.array 
-        of type np.float32 [h, w, <x>]
+        of type np.float32 [h, w, 3]
     
     Returns:
       numpy.array representing the norm of the difference

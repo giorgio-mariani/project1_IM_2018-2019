@@ -108,9 +108,7 @@ class PictureSequence():
     
     def __len__(self):
         return len(self._imgfiles)
-    
-    
-    
+
 #------------------------------------------------------------------------------
 class DepthSequence():
     def __init__(self, directory, pic_sequence, maxlength=None):
@@ -148,9 +146,9 @@ class DepthSequence():
     
     def __len__(self):
         return len(self._depthfiles)
-    
+
 #------------------------------------------------------------------------------
-        
+
 def show_image(img, secs=0, close_after=True):
     cv2.imshow('image', cv2.UMat(img))
     cv2.waitKey(secs)
@@ -163,7 +161,7 @@ def show_depthmap(depth_map, secs=0, close_after=True):
     M = depth_map.max()
     img = np.uint8((depth_map-m)/(M-m)*255)
     show_image(img, secs, close_after)
-    
+
 def load_image_depth(filename, width, height):
     import struct
     with open(filename, "rb") as f:
@@ -184,7 +182,6 @@ def load_image_depth(filename, width, height):
             h = h + 1 if w==0 else h 
             disp = read_float()            
     return I
-
 
 def debug_depth_estimation(
         camera_file,
@@ -220,9 +217,9 @@ def debug_depth_estimation(
     
     if USE_BUNDLE:
         dep_sequence = DepthSequence(depths_folder, sequence)
-        D = ce.compute_energy(camera, FRAME_INDEX, sequence, dep_sequence)
+        D = ce.compute_energy_data(camera, FRAME_INDEX, sequence, dep_sequence)
     else:
-        D = ce.compute_energy(camera, FRAME_INDEX,sequence)
+        D = ce.compute_energy_data(camera, FRAME_INDEX,sequence)
     
     lambda_weights = ce.lambda_factor(np.float32(sequence[FRAME_INDEX]))
     
@@ -242,8 +239,18 @@ def debug_depth_estimation(
     if SHOW_DEPTH_LBP:
         lbp = np.float32(lbp.LBP(D, lambda_weights))  
         show_depthmap(cv2.resize(lbp, WINDOW_SIZE))
-        
+
 ###############################################################################
+
+
+
+
+
+
+
+
+
+
 
 def test_projection():
     import compute_energy as ce
@@ -282,7 +289,3 @@ def test_projection():
     img_i_projected = cv2.remap(sequence[i], remap, None, cv2.INTER_NEAREST, borderValue=[128,128,128])
     img = cv2.resize(img_i_projected,(w*2,h*2))
     show_image(img)
-    
-    
-    
-

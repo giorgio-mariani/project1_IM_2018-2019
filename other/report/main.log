@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6880 64-bit) (preloaded format=pdflatex 2018.12.12)  4 JAN 2019 15:23
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6880 64-bit) (preloaded format=pdflatex 2018.12.12)  9 JAN 2019 21:02
 entering extended mode
 **./main.tex
 (main.tex
@@ -1166,6 +1166,265 @@ Package biblatex Info: ... file 'biblatex.cfg' found.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\biblatex\biblatex.cfg"
 File: biblatex.cfg 
 ))))
+("C:\Program Files\MiKTeX 2.9\tex\latex\cmbright\cmbright.sty"
+Package: cmbright 2005/04/13 v8.1 (WaS)
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 29.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/lmr/m/n --> OT1/cmbr/m/n on input line 29.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/lmr/bx/n --> OT1/cmbr/m/n on input line 29.
+LaTeX Font Info:    Redeclaring symbol font `letters' on input line 30.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `normal'
+(Font)                  OML/lmm/m/it --> OML/cmbrm/m/it on input line 30.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
+(Font)                  OML/lmm/b/it --> OML/cmbrm/m/it on input line 30.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
+(Font)                  OML/cmbrm/m/it --> OML/cmbrm/b/it on input line 31.
+LaTeX Font Info:    Redeclaring symbol font `symbols' on input line 32.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `normal'
+(Font)                  OMS/lmsy/m/n --> OMS/cmbrs/m/n on input line 32.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
+(Font)                  OMS/lmsy/b/n --> OMS/cmbrs/m/n on input line 32.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 33.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/lmr/m/it --> OT1/cmbr/m/sl on input line 33.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/lmr/bx/it --> OT1/cmbr/m/sl on input line 33.
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 34.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/lmr/bx/n --> OT1/cmbr/bx/n on input line 34.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
+(Font)                  OT1/lmr/bx/n --> OT1/cmbr/bx/n on input line 34.
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 35.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/lmtt/m/n --> OT1/cmtl/m/n on input line 35.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/lmtt/m/n --> OT1/cmtl/m/n on input line 35.
+LaTeX Font Info:    Redeclaring math symbol \alpha on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \beta on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \gamma on input line 39.
+LaTeX Font Info:    Redeclaring math symbol \delta on input line 40.
+LaTeX Font Info:    Redeclaring math symbol \epsilon on input line 41.
+LaTeX Font Info:    Redeclaring math symbol \zeta on input line 42.
+LaTeX Font Info:    Redeclaring math symbol \eta on input line 43.
+LaTeX Font Info:    Redeclaring math symbol \theta on input line 44.
+LaTeX Font Info:    Redeclaring math symbol \iota on input line 45.
+LaTeX Font Info:    Redeclaring math symbol \kappa on input line 46.
+LaTeX Font Info:    Redeclaring math symbol \lambda on input line 47.
+LaTeX Font Info:    Redeclaring math symbol \mu on input line 48.
+LaTeX Font Info:    Redeclaring math symbol \nu on input line 49.
+LaTeX Font Info:    Redeclaring math symbol \xi on input line 50.
+LaTeX Font Info:    Redeclaring math symbol \pi on input line 51.
+LaTeX Font Info:    Redeclaring math symbol \rho on input line 52.
+LaTeX Font Info:    Redeclaring math symbol \sigma on input line 53.
+LaTeX Font Info:    Redeclaring math symbol \tau on input line 54.
+LaTeX Font Info:    Redeclaring math symbol \upsilon on input line 55.
+LaTeX Font Info:    Redeclaring math symbol \phi on input line 56.
+LaTeX Font Info:    Redeclaring math symbol \chi on input line 57.
+LaTeX Font Info:    Redeclaring math symbol \psi on input line 58.
+LaTeX Font Info:    Redeclaring math symbol \omega on input line 59.
+LaTeX Font Info:    Redeclaring math symbol \varepsilon on input line 60.
+LaTeX Font Info:    Redeclaring math symbol \vartheta on input line 61.
+LaTeX Font Info:    Redeclaring math symbol \varpi on input line 62.
+LaTeX Font Info:    Redeclaring math symbol \varrho on input line 63.
+LaTeX Font Info:    Redeclaring math symbol \varsigma on input line 64.
+LaTeX Font Info:    Redeclaring math symbol \varphi on input line 65.
+LaTeX Info: Redefining \LaTeX on input line 129.
+LaTeX Info: Redefining \LaTeXe on input line 139.
+LaTeX Font Info:    Try loading font information for T1+cmbr on input line 144.
+
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\cmbright\t1cmbr.fd"
+File: t1cmbr.fd 2005/04/13 v8.1 (WaS)
+))
+("C:\Program Files\MiKTeX 2.9\tex\latex\l3packages\xfrac\xfrac.sty"
+("C:\Program Files\MiKTeX 2.9\tex\latex\l3kernel\expl3.sty"
+Package: expl3 2018-11-19 L3 programming layer (loader) 
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\l3kernel\expl3-code.tex"
+Package: expl3 2018-11-19 L3 programming layer (code)
+\c_max_int=\count375
+\l_tmpa_int=\count376
+\l_tmpb_int=\count377
+\g_tmpa_int=\count378
+\g_tmpb_int=\count379
+\g__kernel_prg_map_int=\count380
+\c_log_iow=\count381
+\l_iow_line_count_int=\count382
+\l__iow_line_target_int=\count383
+\l__iow_one_indent_int=\count384
+\l__iow_indent_int=\count385
+\c_zero_dim=\dimen158
+\c_max_dim=\dimen159
+\l_tmpa_dim=\dimen160
+\l_tmpb_dim=\dimen161
+\g_tmpa_dim=\dimen162
+\g_tmpb_dim=\dimen163
+\c_zero_skip=\skip98
+\c_max_skip=\skip99
+\l_tmpa_skip=\skip100
+\l_tmpb_skip=\skip101
+\g_tmpa_skip=\skip102
+\g_tmpb_skip=\skip103
+\c_zero_muskip=\muskip12
+\c_max_muskip=\muskip13
+\l_tmpa_muskip=\muskip14
+\l_tmpb_muskip=\muskip15
+\g_tmpa_muskip=\muskip16
+\g_tmpb_muskip=\muskip17
+\l_keys_choice_int=\count386
+\l__intarray_loop_int=\count387
+\c__intarray_sp_dim=\dimen164
+\g__intarray_font_int=\count388
+\c__fp_leading_shift_int=\count389
+\c__fp_middle_shift_int=\count390
+\c__fp_trailing_shift_int=\count391
+\c__fp_big_leading_shift_int=\count392
+\c__fp_big_middle_shift_int=\count393
+\c__fp_big_trailing_shift_int=\count394
+\c__fp_Bigg_leading_shift_int=\count395
+\c__fp_Bigg_middle_shift_int=\count396
+\c__fp_Bigg_trailing_shift_int=\count397
+\c__kernel_randint_max_int=\count398
+\g__fp_array_int=\count399
+\l__fp_array_loop_int=\count400
+\l__sort_length_int=\count401
+\l__sort_min_int=\count402
+\l__sort_top_int=\count403
+\l__sort_max_int=\count404
+\l__sort_true_max_int=\count405
+\l__sort_block_int=\count406
+\l__sort_begin_int=\count407
+\l__sort_end_int=\count408
+\l__sort_A_int=\count409
+\l__sort_B_int=\count410
+\l__sort_C_int=\count411
+\l__tl_analysis_normal_int=\count412
+\l__tl_analysis_index_int=\count413
+\l__tl_analysis_nesting_int=\count414
+\l__tl_analysis_type_int=\count415
+\l__regex_internal_a_int=\count416
+\l__regex_internal_b_int=\count417
+\l__regex_internal_c_int=\count418
+\l__regex_balance_int=\count419
+\l__regex_group_level_int=\count420
+\l__regex_mode_int=\count421
+\c__regex_cs_in_class_mode_int=\count422
+\c__regex_cs_mode_int=\count423
+\l__regex_catcodes_int=\count424
+\l__regex_default_catcodes_int=\count425
+\c__regex_catcode_D_int=\count426
+\c__regex_catcode_S_int=\count427
+\c__regex_catcode_L_int=\count428
+\c__regex_catcode_O_int=\count429
+\c__regex_catcode_A_int=\count430
+\c__regex_all_catcodes_int=\count431
+\l__regex_show_lines_int=\count432
+\l__regex_min_state_int=\count433
+\l__regex_max_state_int=\count434
+\l__regex_left_state_int=\count435
+\l__regex_right_state_int=\count436
+\l__regex_capturing_group_int=\count437
+\l__regex_min_pos_int=\count438
+\l__regex_max_pos_int=\count439
+\l__regex_curr_pos_int=\count440
+\l__regex_start_pos_int=\count441
+\l__regex_success_pos_int=\count442
+\l__regex_curr_char_int=\count443
+\l__regex_curr_catcode_int=\count444
+\l__regex_last_char_int=\count445
+\l__regex_case_changed_char_int=\count446
+\l__regex_curr_state_int=\count447
+\l__regex_step_int=\count448
+\l__regex_min_active_int=\count449
+\l__regex_max_active_int=\count450
+\l__regex_replacement_csnames_int=\count451
+\l__regex_match_count_int=\count452
+\l__regex_min_submatch_int=\count453
+\l__regex_submatch_int=\count454
+\l__regex_zeroth_submatch_int=\count455
+\g__regex_trace_regex_int=\count456
+\c_empty_box=\box40
+\l_tmpa_box=\box41
+\l_tmpb_box=\box42
+\g_tmpa_box=\box43
+\g_tmpb_box=\box44
+\l__box_top_dim=\dimen165
+\l__box_bottom_dim=\dimen166
+\l__box_left_dim=\dimen167
+\l__box_right_dim=\dimen168
+\l__box_top_new_dim=\dimen169
+\l__box_bottom_new_dim=\dimen170
+\l__box_left_new_dim=\dimen171
+\l__box_right_new_dim=\dimen172
+\l__box_internal_box=\box45
+\l__coffin_internal_box=\box46
+\l__coffin_internal_dim=\dimen173
+\l__coffin_offset_x_dim=\dimen174
+\l__coffin_offset_y_dim=\dimen175
+\l__coffin_x_dim=\dimen176
+\l__coffin_y_dim=\dimen177
+\l__coffin_x_prime_dim=\dimen178
+\l__coffin_y_prime_dim=\dimen179
+\c_empty_coffin=\box47
+\l__coffin_aligned_coffin=\box48
+\l__coffin_aligned_internal_coffin=\box49
+\l_tmpa_coffin=\box50
+\l_tmpb_coffin=\box51
+\l__coffin_display_coffin=\box52
+\l__coffin_display_coord_coffin=\box53
+\l__coffin_display_pole_coffin=\box54
+\l__coffin_display_offset_dim=\dimen180
+\l__coffin_display_x_dim=\dimen181
+\l__coffin_display_y_dim=\dimen182
+\g__file_internal_ior=\read4
+\l__coffin_bounding_shift_dim=\dimen183
+\l__coffin_left_corner_dim=\dimen184
+\l__coffin_right_corner_dim=\dimen185
+\l__coffin_bottom_corner_dim=\dimen186
+\l__coffin_top_corner_dim=\dimen187
+\l__coffin_scaled_total_height_dim=\dimen188
+\l__coffin_scaled_width_dim=\dimen189
+\l__seq_internal_a_int=\count457
+\l__seq_internal_b_int=\count458
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\l3kernel\l3pdfmode.def"
+File: l3pdfmode.def 2018-11-19 v L3 Experimental driver: PDF mode
+\l__driver_color_stack_int=\count459
+))
+("C:\Program Files\MiKTeX 2.9\tex\latex\l3packages\l3keys2e\l3keys2e.sty"
+Package: l3keys2e 2018-10-17 LaTeX2e option processing using LaTeX3 keys
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\l3packages\xparse\xparse.sty"
+Package: xparse 2018-10-17 L3 Experimental document command parser
+\l__xparse_current_arg_int=\count460
+\g__xparse_grabber_int=\count461
+\l__xparse_m_args_int=\count462
+\l__xparse_mandatory_args_int=\count463
+\l__xparse_v_nesting_int=\count464
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\l3packages\xtemplate\xtemplate.sty"
+Package: xtemplate 2018-10-17 L3 Experimental prototype document functions
+\l__xtemplate_tmp_dim=\dimen190
+\l__xtemplate_tmp_int=\count465
+\l__xtemplate_tmp_muskip=\muskip18
+\l__xtemplate_tmp_skip=\skip104
+)
+Package: xfrac 2018-10-17 L3 Experimental split-level fractions
+\l__xfrac_slash_box=\box55
+\l__xfrac_tmp_box=\box56
+\l__xfrac_denominator_bot_sep_dim=\dimen191
+\l__xfrac_numerator_bot_sep_dim=\dimen192
+\l__xfrac_numerator_top_sep_dim=\dimen193
+\l__xfrac_slash_left_sep_dim=\dimen194
+\l__xfrac_slash_right_sep_dim=\dimen195
+\l__xfrac_slash_left_muskip=\muskip19
+\l__xfrac_slash_right_muskip=\muskip20
+
+Package xtemplate Info: Declaring object type 'xfrac' taking 3 argument(s) on
+(xtemplate)             line 80.
+
+)
 ("C:\Program Files\MiKTeX 2.9\tex\latex\cleveref\cleveref.sty"
 Package: cleveref 2018/03/27 v0.21.4 Intelligent cross-referencing
 Package cleveref Info: `hyperref' support loaded on input line 2370.
@@ -1181,6 +1440,245 @@ LaTeX Info: Redefining \labelcref on input line 2370.
 LaTeX Info: Redefining \labelcpageref on input line 2370.
 Package cleveref Info: `algorithmicx' support loaded on input line 3120.
 Package cleveref Info: `listings' support loaded on input line 3131.
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\wrapfig\wrapfig.sty"
+\wrapoverhang=\dimen196
+\WF@size=\dimen197
+\c@WF@wrappedlines=\count466
+\WF@box=\box57
+\WF@everypar=\toks40
+Package: wrapfig 2003/01/31  v 3.6
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\tcolorbox\tcolorbox.sty"
+Package: tcolorbox 2018/12/07 version 4.15 text color boxes
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\pgf\basiclayer\pgf.sty"
+("C:\Program Files\MiKTeX 2.9\tex\latex\pgf\utilities\pgfrcs.sty"
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\utilities\pgfutil-common.tex"
+\pgfutil@everybye=\toks41
+\pgfutil@tempdima=\dimen198
+\pgfutil@tempdimb=\dimen199
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\utilities\pgfutil-common-lists.te
+x")) ("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\utilities\pgfutil-latex.def"
+\pgfutil@abb=\box58
+("C:\Program Files\MiKTeX 2.9\tex\latex\ms\everyshi.sty"
+Package: everyshi 2001/05/15 v3.00 EveryShipout Package (MS)
+))
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\utilities\pgfrcs.code.tex"
+Package: pgfrcs 2015/08/07 v3.0.1a (rcs-revision 1.31)
+))
+Package: pgf 2015/08/07 v3.0.1a (rcs-revision 1.15)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\pgf\basiclayer\pgfcore.sty"
+("C:\Program Files\MiKTeX 2.9\tex\latex\pgf\systemlayer\pgfsys.sty"
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsys.code.tex"
+Package: pgfsys 2014/07/09 v3.0.1a (rcs-revision 1.48)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\utilities\pgfkeys.code.tex"
+\pgfkeys@pathtoks=\toks42
+\pgfkeys@temptoks=\toks43
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\utilities\pgfkeysfiltered.code.te
+x"
+\pgfkeys@tmptoks=\toks44
+))
+\pgf@x=\dimen256
+\pgf@y=\dimen257
+\pgf@xa=\dimen258
+\pgf@ya=\dimen259
+\pgf@xb=\dimen260
+\pgf@yb=\dimen261
+\pgf@xc=\dimen262
+\pgf@yc=\dimen263
+\w@pgf@writea=\write4
+\r@pgf@reada=\read5
+\c@pgf@counta=\count467
+\c@pgf@countb=\count468
+\c@pgf@countc=\count469
+\c@pgf@countd=\count470
+\t@pgf@toka=\toks45
+\t@pgf@tokb=\toks46
+\t@pgf@tokc=\toks47
+ ("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgf.cfg"
+File: pgf.cfg 2008/05/14  (rcs-revision 1.7)
+)
+Driver file for pgf: pgfsys-pdftex.def
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsys-pdftex.def"
+File: pgfsys-pdftex.def 2014/10/11  (rcs-revision 1.35)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsys-common-pdf.def
+"
+File: pgfsys-common-pdf.def 2013/10/10  (rcs-revision 1.13)
+)))
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsyssoftpath.code.t
+ex"
+File: pgfsyssoftpath.code.tex 2013/09/09  (rcs-revision 1.9)
+\pgfsyssoftpath@smallbuffer@items=\count471
+\pgfsyssoftpath@bigbuffer@items=\count472
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsysprotocol.code.t
+ex"
+File: pgfsysprotocol.code.tex 2006/10/16  (rcs-revision 1.4)
+)) ("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcore.code.tex"
+Package: pgfcore 2010/04/11 v3.0.1a (rcs-revision 1.7)
+ ("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmath.code.tex"
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathcalc.code.tex"
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathutil.code.tex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathparser.code.tex"
+\pgfmath@dimen=\dimen264
+\pgfmath@count=\count473
+\pgfmath@box=\box59
+\pgfmath@toks=\toks48
+\pgfmath@stack@operand=\toks49
+\pgfmath@stack@operation=\toks50
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.code.tex"
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.basic.code.
+tex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.trigonometr
+ic.code.tex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.random.code
+.tex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.comparison.
+code.tex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.base.code.t
+ex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.round.code.
+tex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.misc.code.t
+ex")
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.integerarit
+hmetics.code.tex")))
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfloat.code.tex"
+\c@pgfmathroundto@lastzeros=\count474
+))
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepoints.code.tex
+"
+File: pgfcorepoints.code.tex 2013/10/07  (rcs-revision 1.27)
+\pgf@picminx=\dimen265
+\pgf@picmaxx=\dimen266
+\pgf@picminy=\dimen267
+\pgf@picmaxy=\dimen268
+\pgf@pathminx=\dimen269
+\pgf@pathmaxx=\dimen270
+\pgf@pathminy=\dimen271
+\pgf@pathmaxy=\dimen272
+\pgf@xx=\dimen273
+\pgf@xy=\dimen274
+\pgf@yx=\dimen275
+\pgf@yy=\dimen276
+\pgf@zx=\dimen277
+\pgf@zy=\dimen278
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepathconstruct.c
+ode.tex"
+File: pgfcorepathconstruct.code.tex 2013/10/07  (rcs-revision 1.29)
+\pgf@path@lastx=\dimen279
+\pgf@path@lasty=\dimen280
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepathusage.code.
+tex"
+File: pgfcorepathusage.code.tex 2014/11/02  (rcs-revision 1.24)
+\pgf@shorten@end@additional=\dimen281
+\pgf@shorten@start@additional=\dimen282
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorescopes.code.tex
+"
+File: pgfcorescopes.code.tex 2015/05/08  (rcs-revision 1.46)
+\pgfpic=\box60
+\pgf@hbox=\box61
+\pgf@layerbox@main=\box62
+\pgf@picture@serial@count=\count475
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoregraphicstate.co
+de.tex"
+File: pgfcoregraphicstate.code.tex 2014/11/02  (rcs-revision 1.12)
+\pgflinewidth=\dimen283
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoretransformations
+.code.tex"
+File: pgfcoretransformations.code.tex 2015/08/07  (rcs-revision 1.20)
+\pgf@pt@x=\dimen284
+\pgf@pt@y=\dimen285
+\pgf@pt@temp=\dimen286
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorequick.code.tex"
+File: pgfcorequick.code.tex 2008/10/09  (rcs-revision 1.3)
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreobjects.code.te
+x"
+File: pgfcoreobjects.code.tex 2006/10/11  (rcs-revision 1.2)
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepathprocessing.
+code.tex"
+File: pgfcorepathprocessing.code.tex 2013/09/09  (rcs-revision 1.9)
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorearrows.code.tex
+"
+File: pgfcorearrows.code.tex 2015/05/14  (rcs-revision 1.43)
+\pgfarrowsep=\dimen287
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreshade.code.tex"
+File: pgfcoreshade.code.tex 2013/07/15  (rcs-revision 1.15)
+\pgf@max=\dimen288
+\pgf@sys@shading@range@num=\count476
+) ("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreimage.code.te
+x"
+File: pgfcoreimage.code.tex 2013/07/15  (rcs-revision 1.18)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreexternal.code.t
+ex"
+File: pgfcoreexternal.code.tex 2014/07/09  (rcs-revision 1.21)
+\pgfexternal@startupbox=\box63
+))
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorelayers.code.tex
+"
+File: pgfcorelayers.code.tex 2013/07/18  (rcs-revision 1.7)
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoretransparency.co
+de.tex"
+File: pgfcoretransparency.code.tex 2013/09/30  (rcs-revision 1.5)
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepatterns.code.t
+ex"
+File: pgfcorepatterns.code.tex 2013/11/07  (rcs-revision 1.5)
+)))
+("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\modules\pgfmoduleshapes.code.tex"
+File: pgfmoduleshapes.code.tex 2014/03/21  (rcs-revision 1.35)
+\pgfnodeparttextbox=\box64
+) ("C:\Program Files\MiKTeX 2.9\tex\generic\pgf\modules\pgfmoduleplot.code.tex"
+File: pgfmoduleplot.code.tex 2015/08/03  (rcs-revision 1.13)
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\pgf\compatibility\pgfcomp-version-0-65.
+sty"
+Package: pgfcomp-version-0-65 2007/07/03 v3.0.1a (rcs-revision 1.7)
+\pgf@nodesepstart=\dimen289
+\pgf@nodesepend=\dimen290
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\pgf\compatibility\pgfcomp-version-1-18.
+sty"
+Package: pgfcomp-version-1-18 2007/07/23 v3.0.1a (rcs-revision 1.1)
+)) ("C:\Program Files\MiKTeX 2.9\tex\latex\environ\environ.sty"
+Package: environ 2014/05/04 v0.3 A new way to define environments
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\trimspaces\trimspaces.sty"
+Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
+))
+\tcb@titlebox=\box65
+\tcb@upperbox=\box66
+\tcb@lowerbox=\box67
+\tcb@phantombox=\box68
+\c@tcbbreakpart=\count477
+\c@tcblayer=\count478
+\tcolorbox@number=\count479
+\tcb@temp=\box69
+\tcb@temp=\box70
+\tcb@temp=\box71
+\tcb@temp=\box72
+\tcb@out=\write5
+\tcb@record@out=\write6
 )
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'babel' package.
@@ -1211,34 +1709,30 @@ File: german.lbx 2018/11/02 v3.12 biblatex localization (PK/MW)
 )) (main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 41.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 41.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 46.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 46.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\base\ts1cmr.fd"
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 41.
-LaTeX Font Info:    ... okay on input line 41.
-LaTeX Font Info:    Try loading font information for T1+lmr on input line 41.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\lm\t1lmr.fd"
-File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -1275,38 +1769,39 @@ File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 
 ("C:\Program Files\MiKTeX 2.9\tex\context\base\supp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count375
-\scratchdimen=\dimen158
-\scratchbox=\box40
-\nofMPsegments=\count376
-\nofMParguments=\count377
-\everyMPshowfont=\toks40
-\MPscratchCnt=\count378
-\MPscratchDim=\dimen159
-\MPnumerator=\count379
-\makeMPintoPDFobject=\count380
-\everyMPtoPDFconversion=\toks41
+\scratchcounter=\count480
+\scratchdimen=\dimen291
+\scratchbox=\box73
+\nofMPsegments=\count481
+\nofMParguments=\count482
+\everyMPshowfont=\toks51
+\MPscratchCnt=\count483
+\MPscratchDim=\dimen292
+\MPnumerator=\count484
+\makeMPintoPDFobject=\count485
+\everyMPtoPDFconversion=\toks52
 )
-\AtBeginShipoutBox=\box41
-Package hyperref Info: Link coloring OFF on input line 41.
+\AtBeginShipoutBox=\box74
+Package hyperref Info: Link coloring OFF on input line 46.
  ("C:\Program Files\MiKTeX 2.9\tex\latex\hyperref\nameref.sty"
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 
 ("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\gettitlestring.sty"
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count381
+\c@section@level=\count486
 )
-LaTeX Info: Redefining \ref on input line 41.
-LaTeX Info: Redefining \pageref on input line 41.
-LaTeX Info: Redefining \nameref on input line 41.
+LaTeX Info: Redefining \ref on input line 46.
+LaTeX Info: Redefining \pageref on input line 46.
+LaTeX Info: Redefining \nameref on input line 46.
 
 (main.out) (main.out)
-\@outlinefile=\write4
-\openout4 = `main.out'.
+\@outlinefile=\write7
+\openout7 = `main.out'.
 
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: listings package is loaded.
+Package caption Info: wrapfig package is loaded.
 Package caption Info: End \AtBeginDocument code.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\pdflscape.sty"
@@ -1317,7 +1812,7 @@ Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
 )
 Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
 )
-\c@lstlisting=\count382
+\c@lstlisting=\count487
 Package biblatex Info: Input encoding 'utf8' detected.
 Package biblatex Info: Automatic encoding selection.
 (biblatex)             Assuming data encoding 'utf8'.
@@ -1326,156 +1821,352 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (main.bbl)
-Package biblatex Info: Reference section=0 on input line 41.
-Package biblatex Info: Reference segment=0 on input line 41.
-LaTeX Font Info:    Try loading font information for T1+lmss on input line 44.
+Package biblatex Info: Reference section=0 on input line 46.
+Package biblatex Info: Reference segment=0 on input line 46.
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\lm\t1lmss.fd"
-File: t1lmss.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-LaTeX Font Info:    Try loading font information for OT1+lmr on input line 44.
+ABD: EveryShipout initializing macros
+LaTeX Font Info:    Try loading font information for OT1+cmbr on input line 49.
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\lm\ot1lmr.fd"
-File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\cmbright\ot1cmbr.fd"
+File: ot1cmbr.fd 2005/04/13 v8.1 (WaS)
 )<<ot1.cmap>>
-LaTeX Font Info:    Try loading font information for OML+lmm on input line 44.
+LaTeX Font Info:    Try loading font information for OML+cmbrm on input line 49
+.
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\lm\omllmm.fd"
-File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
+("C:\Program Files\MiKTeX 2.9\tex\latex\cmbright\omlcmbrm.fd"
+File: omlcmbrm.fd 2005/04/13 v8.1 (WaS)
 )<<oml.cmap>>
-LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 44.
+LaTeX Font Info:    Try loading font information for OMS+cmbrs on input line 49
+.
 
-
-("C:\Program Files\MiKTeX 2.9\tex\latex\lm\omslmsy.fd"
-File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
+("C:\Program Files\MiKTeX 2.9\tex\latex\cmbright\omscmbrs.fd"
+File: omscmbrs.fd 2005/04/13 v8.1 (WaS)
 )<<oms.cmap>><<omx.cmap>>
 LaTeX Font Info:    External font `cmex7' loaded for size
-(Font)              <6> on input line 44.
-LaTeX Font Info:    Try loading font information for U+msa on input line 44.
-("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Try loading font information for U+msb on input line 44.
+(Font)              <6> on input line 49.
+ [1
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1
-
-{C:/Users/giorg/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] (main.toc
+{C:/Users/giorg/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+(main.toc
 Package cleveref Info: loaded `english' language definitions on input line 2.
 Package tocbasic Info: Using my definition of `\numberline' on input line 4.
-Package tocbasic Info: Using my definition of `\numberline' on input line 26.
-Package tocbasic Info: Using my definition of `\numberline' on input line 48.
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 60.
-
-("C:\Program Files\MiKTeX 2.9\tex\latex\lm\t1lmtt.fd"
-File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
+Package tocbasic Info: Using my definition of `\numberline' on input line 24.
+Package tocbasic Info: Using my definition of `\numberline' on input line 56.
+LaTeX Font Info:    Try loading font information for T1+cmtl on input line 72.
+ ("C:\Program Files\MiKTeX 2.9\tex\latex\cmbright\t1cmtl.fd"
+File: t1cmtl.fd 2005/04/13 v8.1 (WaS)
 )
-Package tocbasic Info: Using my definition of `\numberline' on input line 70.
-Package tocbasic Info: Using my definition of `\numberline' on input line 72.
-Package tocbasic Info: Using my definition of `\numberline' on input line 76.
+Package tocbasic Info: Using my definition of `\numberline' on input line 82.
+Package tocbasic Info: Using my definition of `\numberline' on input line 84.
+Package tocbasic Info: Using my definition of `\numberline' on input line 90.
 )
-\tf@toc=\write5
-\openout5 = `main.toc'.
+\tf@toc=\write8
+\openout8 = `main.toc'.
 
- [2
+
+[2
 
 ]
 Chapter 1.
+LaTeX Font Info:    Font shape `T1/cmbr/m/it' in size <10.95> not available
+(Font)              Font shape `T1/cmbr/m/sl' tried instead on input line 84.
 LaTeX Font Info:    External font `cmex7' loaded for size
-(Font)              <5> on input line 81.
-<images/depthmap_example.png, id=173, 2351.78625pt x 668.4975pt>
+(Font)              <5> on input line 86.
+LaTeX Font Info:    Font shape `T1/cmbr/m/it' in size <9> not available
+(Font)              Font shape `T1/cmbr/m/sl' tried instead on input line 86.
+<images/depthmap_example.png, id=182, 2351.78625pt x 668.4975pt>
 File: images/depthmap_example.png Graphic file (type png)
 <use images/depthmap_example.png>
-Package pdftex.def Info: images/depthmap_example.png  used on input line 86.
+Package pdftex.def Info: images/depthmap_example.png  used on input line 91.
 (pdftex.def)             Requested size: 394.63846pt x 112.17421pt.
 [3
 
  <./images/depthmap_example.png>]
+<images/sfm.png, id=201, 697.60625pt x 517.935pt>
+File: images/sfm.png Graphic file (type png)
+<use images/sfm.png>
+Package pdftex.def Info: images/sfm.png  used on input line 109.
+(pdftex.def)             Requested size: 141.23796pt x 104.85754pt.
 Package cleveref Info: loaded `english' language definitions on input line 138.
 
- [4]
-Package cleveref Info: loaded `english' language definitions on input line 138.
+ [4 <./images/sfm.png>]
+Package cleveref Info: loaded `english' language definitions on input line 147.
 
  [5]
 Chapter 2.
 [6
 
 ]
-Package cleveref Info: loaded `english' language definitions on input line 210.
+Package cleveref Info: loaded `english' language definitions on input line 218.
 
  [7]
-Chapter 3.
-[8
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 253.
+Package cleveref Info: loaded `english' language definitions on input line 281.
 
-]
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 246.
-Package cleveref Info: loaded `english' language definitions on input line 264.
+ [8]
+Package cleveref Info: loaded `english' language definitions on input line 307.
 
  [9]
+Overfull \hbox (2.46223pt too wide) in paragraph at lines 326--328
+\T1/cmbr/m/n/10.95 Using this def-i-ni-tion, $\OML/cmbrm/m/it/10.95 p[]$ \T1/cm
+br/m/n/10.95 en-codes the dis-tance be-tween the co-or-di-nates $\OML/cmbrm/m/i
+t/10.95 x$ \T1/cmbr/m/n/10.95 and $\OML/cmbrm/m/it/10.95 l[]\OT1/cmbr/m/n/10.95
+ (\OML/cmbrm/m/it/10.95 x[]; D[]\OT1/cmbr/m/n/10.95 (\OML/cmbrm/m/it/10.95 x[]\
+OT1/cmbr/m/n/10.95 ))$
+ []
+
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.1}) 
+has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.338 		\State
+               $D^r_{t'} \leftarrow$ \texttt{remap}($D_{t'}$, $x'^h$)pdfTeX war
+ning (ext4): destination with the same identifier (name{ALG@line.2}) has been a
+lready used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.339 		\State
+               $l_{t',t}\leftarrow$ \texttt{conjugate\_coordinates}($camera$...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.3}) 
+has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.341 		\State
+               $p_v \leftarrow \exp\left(-\frac{\lVert x - l_{t',t}\rVert^2}...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.1}) 
+has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.350 		\State
+               h $\leftarrow$ camera.heightpdfTeX warning (ext4): destination w
+ith the same identifier (name{ALG@line.2}) has been already used, duplicate ign
+ored
+<to be read again> 
+                   \relax 
+l.351 		\State
+               w $\leftarrow$ camera.widthpdfTeX warning (ext4): destination wi
+th the same identifier (name{ALG@line.3}) has been already used, duplicate igno
+red
+<to be read again> 
+                   \relax 
+l.352 		\State
+               $I_t \leftarrow \hat I[ t ]$pdfTeX warning (ext4): destination w
+ith the same identifier (name{ALG@line.4}) has been already used, duplicate ign
+ored
+<to be read again> 
+                   \relax 
+l.353 		\State
+               $use\_bundle\leftarrow $ \texttt{True} if $\hat D$ is not emp...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.5}) 
+has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.354 		\State
+              pdfTeX warning (ext4): destination with the same identifier (name
+{ALG@line.6}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.355 		\State
+               $x^h \leftarrow$ \texttt{homogeneous\_coordinate\_grid}(h,w)pdfT
+eX warning (ext4): destination with the same identifier (name{ALG@line.7}) has 
+been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.356 		\State
+               create table $L$ with $m\times h \times w$ elements, initiali...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.8}) 
+has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.358 		\State
+              pdfTeX warning (ext4): destination with the same identifier (name
+{ALG@line.9}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.359 		\For
+             {$t'\leftarrow 0\dots n$}pdfTeX warning (ext4): destination with t
+he same identifier (name{ALG@line.10}) has been already used, duplicate ignored
+
+<to be read again> 
+                   \relax 
+l.360 		\State
+               $I_{t'} \leftarrow \hat I[ t' ]$pdfTeX warning (ext4): destinati
+on with the same identifier (name{ALG@line.11}) has been already used, duplicat
+e ignored
+<to be read again> 
+                   \relax 
+l.361 		\For
+             {${level}\leftarrow 0\dots m$}pdfTeX warning (ext4): destination w
+ith the same identifier (name{ALG@line.12}) has been already used, duplicate ig
+nored
+<to be read again> 
+                   \relax 
+l.362 		\State
+               create matrix $D$ with $h \times w$ elements, initialized wit...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.13})
+ has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.363 		\State
+               $x'^h\leftarrow$ \texttt{conjugate\_coordinates}(camera, $t$,...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.14})
+ has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.364 		\State
+               $I^r_{t'} \leftarrow$ \texttt{remap}($I_{t'}$, $x'^h$)pdfTeX war
+ning (ext4): destination with the same identifier (name{ALG@line.15}) has been 
+already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.366 		\State
+               $p_c \leftarrow$  $\sigma_c$ / $(\sigma_c +$ \texttt{L2\_norm...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.16})
+ has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.367 		\State
+              pdfTeX warning (ext4): destination with the same identifier (name
+{ALG@line.17}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.370 		\If
+            {use\_bundle}pdfTeX warning (ext4): destination with the same ident
+ifier (name{ALG@line.18}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.371 			\State
+                $D^r_{t'} \leftarrow$ \texttt{remap}($D_{t'}$, $x'^h$)pdfTeX wa
+rning (ext4): destination with the same identifier (name{ALG@line.19}) has been
+ already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.372 			\State
+                $l_{t',t}\leftarrow$ \texttt{conjugate\_coordinates}($camera...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.20})
+ has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.373 			\State
+                $p_v \leftarrow \exp\left(-\frac{\lVert x - l_{t',t} \rVert^...
+pdfTeX warning (ext4): destination with the same identifier (name{ALG@line.21})
+ has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.374 			\State
+                $L[level] \leftarrow L[level] + p_c\cdot p_v$
+Package cleveref Info: loaded `english' language definitions on input line 393.
+
+ [10]
+Package cleveref Info: loaded `english' language definitions on input line 406.
+
+ [11]
+Chapter 3.
+
+LaTeX Font Warning: Font shape `T1/cmtl/bx/n' undefined
+(Font)              using `T1/cmtl/m/n' instead on input line 431.
+
+LaTeX Font Info:    Font shape `T1/cmtl/m/it' in size <10.95> not available
+(Font)              Font shape `T1/cmtl/m/sl' tried instead on input line 440.
+[12
+
+]
+Package cleveref Info: loaded `english' language definitions on input line 482.
+
+ [13]
+Package cleveref Info: loaded `english' language definitions on input line 482.
+
+ [14]
 Chapter 4.
-[10
+[15
 
 ]
 Appendix A.
-LaTeX Font Info:    Try loading font information for TS1+lmr on input line 288.
-
-("C:\Program Files\MiKTeX 2.9\tex\latex\lm\ts1lmr.fd"
-File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [11
-
-]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 304.
- [12
+LaTeX Font Info:    Try loading font information for TS1+cmbr on input line 506
+.
+("C:\Program Files\MiKTeX 2.9\tex\latex\cmbright\ts1cmbr.fd"
+File: ts1cmbr.fd 2005/04/13 v8.1 (WaS)
+) [16
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 304.
+<images/conjugate_pixel.png, id=352, 1251.17438pt x 948.54375pt>
+File: images/conjugate_pixel.png Graphic file (type png)
+<use images/conjugate_pixel.png>
+Package pdftex.def Info: images/conjugate_pixel.png  used on input line 525.
+(pdftex.def)             Requested size: 311.55768pt x 236.19456pt.
+Package cleveref Info: loaded `english' language definitions on input line 530.
+
+ [17 <./images/conjugate_pixel.png>] [18
+
+]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 534.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 534.
  (main.aux
 Package cleveref Info: loaded `english' language definitions on input line 24.
 )
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 304.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 304.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 534.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 534.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 8057EFD6580398CB63ADE2EE8EF76E58;4156.
+(rerunfilecheck)             Checksum: 5729EDC471F7E57EFD5809E350A009E5;4518.
+
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 27709 strings out of 492969
- 448613 string characters out of 3135846
- 980853 words of memory out of 3000000
- 30975 multiletter control sequences out of 15000+200000
- 94670 words of font info for 78 fonts, out of 3000000 for 9000
+ 45934 strings out of 492969
+ 831650 string characters out of 3135846
+ 1319952 words of memory out of 3000000
+ 48966 multiletter control sequences out of 15000+200000
+ 555346 words of font info for 81 fonts, out of 3000000 for 9000
  1143 hyphenation exceptions out of 8191
- 67i,21n,96p,1119b,2280s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/Program Files/M
-iKTeX 2.9/fonts/enc/dvips/lm/lm-ts1.enc}{C:/Program Files/MiKTeX 2.9/fonts/enc/
-dvips/lm/lm-mathsy.enc}{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.en
-c}{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}<C:/Program Fil
-es/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Files/MiKTe
-X 2.9/fonts/type1/public/lm/lmbx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1
-/public/lm/lmcsc10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmmi1
-0.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmmi8.pfb><C:/Program 
-Files/MiKTeX 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Program Files/MiKTeX 2.9/f
-onts/type1/public/lm/lmr6.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/l
-m/lmr8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmr9.pfb><C:/Prog
-ram Files/MiKTeX 2.9/fonts/type1/public/lm/lmri10.pfb><C:/Program Files/MiKTeX 
-2.9/fonts/type1/public/lm/lmri9.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/pu
-blic/lm/lmss10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmss12.pf
-b><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmss17.pfb><C:/Program Fil
-es/MiKTeX 2.9/fonts/type1/public/lm/lmss8.pfb><C:/Program Files/MiKTeX 2.9/font
-s/type1/public/lm/lmssbx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/
-lm/lmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmsy8.pfb><C:/
-Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmtk10.pfb><C:/Program Files/MiK
-TeX 2.9/fonts/type1/public/lm/lmtt10.pfb><C:/Program Files/MiKTeX 2.9/fonts/typ
-e1/public/lm/lmtt12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmtt
-9.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmtti10.pfb><C:/Progra
-m Files/MiKTeX 2.9/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (12 pages, 3340086 bytes).
+ 67i,12n,96p,1119b,2286s stack positions out of 5000i,500n,10000p,200000b,50000s
+ <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi
+657\tbmr10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\
+cmbright\dpi720\ebtl10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\lj
+four\public\cmbright\dpi657\ebto10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9
+\fonts\pk\ljfour\public\cmbright\dpi540\ebtl10.pk> <C:\Users\giorg\AppData\Loca
+l\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi450\cmbrsy8.pk> <C:\Users\giorg
+\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi375\cmbrmi8.pk> <C
+:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi450\c
+mbrmi8.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbr
+ight\dpi450\cmbr8.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\
+public\cmbright\dpi600\cmbrmi9.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fon
+ts\pk\ljfour\public\cmbright\dpi657\cmbrbs10.pk> <C:\Users\giorg\AppData\Local\
+MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi600\cmbrsy8.pk> <C:\Users\giorg\A
+ppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi657\cmbrsy10.pk> <C:
+\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi600\cm
+brmi8.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbri
+ght\dpi600\cmbr8.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\p
+ublic\cmbright\dpi657\cmbrmi10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fon
+ts\pk\ljfour\public\cmbright\dpi657\cmbr10.pk> <C:\Users\giorg\AppData\Local\Mi
+KTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi600\ebmo9.pk> <C:\Users\giorg\AppDa
+ta\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi600\ebmr9.pk> <C:\Users\
+giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi450\ebmr8.pk>
+ <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi60
+0\ebmr10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cm
+bright\dpi657\ebmo10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfo
+ur\public\cmbright\dpi864\ebmr10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\f
+onts\pk\ljfour\public\cmbright\dpi720\ebmr17.pk> <C:\Users\giorg\AppData\Local\
+MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi657\ebtl10.pk> <C:\Users\giorg\Ap
+pData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi657\ebbx10.pk> <C:\Us
+ers\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi864\ebmr1
+7.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\
+dpi657\ebmr10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\publ
+ic\cmbright\dpi600\ebbx10.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2.9\fonts\pk
+\ljfour\public\cmbright\dpi600\ebmr8.pk> <C:\Users\giorg\AppData\Local\MiKTeX\2
+.9\fonts\pk\ljfour\public\cmbright\dpi720\ebmr10.pk> <C:\Users\giorg\AppData\Lo
+cal\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi1037\ebbx10.pk> <C:\Users\gio
+rg\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\public\cmbright\dpi600\ebmr17.pk><C
+:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb>
+Output written on main.pdf (18 pages, 3933286 bytes).
 PDF statistics:
- 374 PDF objects out of 1000 (max. 8388607)
- 63 named destinations out of 1000 (max. 500000)
- 258 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1158 PDF objects out of 1200 (max. 8388607)
+ 112 named destinations out of 1000 (max. 500000)
+ 288 words of extra memory for PDF output out of 10000 (max. 10000000)
 

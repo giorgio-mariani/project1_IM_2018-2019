@@ -29,24 +29,21 @@ def LBP(energy_data, edge_weights):
     d_p
     
     Arguments:
-      * energy_data - data term in the optimizated
-        energy funtion:
+     :energy_data: data term in the optimizated energy funtion:
          + numpy.ndarray
          + numpy.float32
          + [m, height, width]
          
-      * edge_weights - scalar weigth per image 
-        edge:
+     :edge_weights: scalar weigths per image edge:
          + list of numpy.ndarray
          + numpy.float32
          + [height, width] * 4 
     
     Return:
-        numpy.ndarray containing the initialization
-        depth index per pixel:
-         + nuumpy.ndarray
+        numpy.ndarray containing the depth-values index per pixel:
+         + numpy.ndarray
          + numpy.uint16
-         + [height,width] 
+         + [height, width] 
     '''
     assert isinstance(energy_data, np.ndarray)
     assert energy_data.dtype == np.float32
