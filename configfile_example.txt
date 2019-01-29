@@ -1,0 +1,17 @@
+{
+"camera_file": "./data/Lawn/src/cameras.txt",
+"pictures_directory": "./data/Lawn/src",
+"pictures_file_extension": ".jpg",
+"output_directory": "./output",
+"original_height": 540,
+"original_width": 960,
+"height":270,
+"width":480,
+"start_frame":1,
+"end_frame":5,
+"depth_levels":100,
+"depth_min":0.0,
+"depth_max":0.008,
+"epsilon":50.0,
+"sigma_c":10.0
+}

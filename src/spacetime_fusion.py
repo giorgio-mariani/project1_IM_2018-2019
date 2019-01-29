@@ -31,12 +31,13 @@ def compute_spatial_time_fusion(depths):
           [ 0., 0.,  0.,  0.,  0.,  0.,  0., -1.,  1.]],
          dtype=np.float32)
     
+    print A.shape
     b = np.ones(9)
-    x, info = scipy.sparse.linalg.cg(A, b)
+    x, info = scipy.sparse.linalg.bicgstab(A, b, x0=x0, maxiter=1)
    
-    print A
+    print x, info
     print b
-    print np.around(x, 2)    
+    print np.around(x, 2)
     # define space matrix right
     
     

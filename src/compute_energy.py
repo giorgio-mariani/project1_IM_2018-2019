@@ -6,39 +6,76 @@ import numpy as np
 from tqdm import tqdm
 
 import utils 
-import params
 
 
 ###############################################################################
-def compute_energy_data( 
-        camera, 
-        frame_index,
-        pic_sequence, 
-        dep_sequence=None):
+def compute_energy_data(
+    frame_index, 
+    sequence, 
+    window_side=10, 
+    sigma_c=1.0, 
+    sigma_d=2.5):
+    """Compute the data cost term, for frame *frame_index*, to be used 
+    for the LBP algorithm.
+
+    This function computes an array with shape `[m, h, w]`, where `m` is 
+    the number of depth labels used, `h` and `w` are respectively the 
+    pictures' height and width.
+    The value in this array at position `(d, y, x)`, is inversely 
+    proportional to the likelihood that pixel `(y,x)` has disparity `d`.
+    this value is computed using multi-stereo photo consistency constraints,
+    and, if ``sequence.use_bundle()==True``, geometric consistency with previously
+    estimated depth-maps (*bundle optimization*).
+    The result of this function should be used as **data cost** for the LBP
+    algorithm (see :func:`lbp.lbp`).
+
+    See Also
+    --------
+    lbp.lbp: *Loopy Belief Propagation* implementation.
+
+    Parameters
+    ----------
+    frame_index : int
+        Frame whose depth-map is estimated.
+
+    sequence : utils.Sequence
+        Object containing parameters necessary to the depth-maps estimation.
+        It contains the camera matrices, picture arrays, length of the
+        sequence, etc. If *sequence* contains also previously estimated 
+        depth-maps, then the *bundle optimization* phase is also executed.
+
+    Returns
+    -------
+    numpy array, type float32
+        Array with shape `[m, h, w]`, with `m` the number of possible depth 
+        labels, and `h` and `w` height and width of frame *frame_index*.
+    """
     
     # TODO check input validity
     
-    # check if it is possible to use bundle optimization
-    usebundle = dep_sequence != None
-    
     # set the range of possible frames 
-    t = frame_index
-    window_side = params.WINDOW_SIDE
-    window_start = max(0,t - window_side)
-    window_end = min(len(pic_sequence), window_start + window_side*2 + 1)
+    t, start, end = frame_index, 0, sequence.end - sequence.start
+    if t - window_side < start :
+        window_start = start
+        window_end = min(end, window_start + window_side*2 + 1)
+    elif t + window_side + 1> end:
+        window_end = end
+        window_start = max(start, window_end - window_side*2 - 1)
+    else:
+        window_start = t - window_side
+        window_end = t + window_side + 1 
     
     # get paramaters
-    h, w = camera.h, camera.w
-    sigma_c = params.SIGMA_C
-    levels = params.DEPTH_LEVELS
+    h, w = sequence.height, sequence.width
+    levels = sequence.depth_levels
     depth_values = np.linspace(
-        params.DEPTH_MIN,
-        params.DEPTH_MAX,
-        params.DEPTH_LEVELS,
+        sequence.depth_min,
+        sequence.depth_max,
+        sequence.depth_levels,
         dtype=np.float32)
     
     # get image at frame cf
-    I_t = np.float32(pic_sequence[t])
+    I_t = sequence.I[t]
     
     # initialize indices coordinates
     x_h = homogeneous_coord_grid(h,w) #[3, h, w]
@@ -53,7 +90,7 @@ def compute_energy_data(
         if t_prime == t: continue  
     
         # get image at frame i
-        I_t_prime = np.float32(pic_sequence[t_prime])  
+        I_t_prime = sequence.I[t_prime]
         
         for level in range(levels):
             # photo-consistency constraint ------------------------------------
@@ -63,7 +100,7 @@ def compute_energy_data(
 
             # compute conjugate pixel position using the depth level at time t
             x_prime_h = conujugate_coordinates(
-                    camera=camera,
+                    sequence=sequence,
                     pose1=t,
                     pose2=t_prime,
                     coorsxy=x_h, 
@@ -83,7 +120,7 @@ def compute_energy_data(
             pc = sigma_c/(sigma_c + color_difference)
             
             # check if bundle optimization is required
-            if not usebundle:
+            if not sequence.use_bundle():
                 # update likelyhood using photo-consistency contraint
                 L[level,:,:] += pc
 
@@ -91,7 +128,7 @@ def compute_energy_data(
                 # geometric-consistency constraint ----------------------------
                 
                 # compute candidate pixels using previously estimated depth values
-                depth_indices = dep_sequence[t_prime] # get prev. estimated depth 
+                depth_indices = sequence.D[t_prime] # get prev. estimated depth 
                 depth_indices_projected = cv2.remap(
                         src=depth_indices, 
                         map1=x_prime, 
@@ -104,7 +141,7 @@ def compute_energy_data(
                 
                 # project back from t_prime to t using prev. estimated depth values
                 projected_x_prime_h = conujugate_coordinates(
-                        camera=camera,
+                        sequence=sequence,
                         pose1=t_prime,
                         pose2=t,
                         coorsxy=x_prime_h,
@@ -117,7 +154,7 @@ def compute_energy_data(
                     keepdims=False)
                 
                 # compute the bundle optimization term (pv)
-                pv = np.exp(color_difference_norm/(-2*params.SIGMA_D_SQUARED))
+                pv = np.exp(color_difference_norm/(-2*sigma_d*sigma_d))
                 
                 # update likelyhood using photo and geometric constraints
                 L[level,:,:] += pc*pv
@@ -127,44 +164,43 @@ def compute_energy_data(
     return 1 - u*L
 
 #------------------------------------------------------------------------------
-def conujugate_coordinates(camera, pose1, pose2, coorsxy, d):
-    """
-    Return the image pixel coordinates with respect of two different camera poses.
+def conujugate_coordinates(sequence, pose1, pose2, coorsxy, d):
+    """Return the image pixel coordinates with respect of two different camera poses.
 
-    Arguments:
-     * camera - utils.Camera instance
+    Parameters
+    ----------
+    sequence : utils.Sequence
+        Sequence object containing the camera parameters.
      
-     * pose1 - index of the first 
-       camera pose
+    pose1 : int
+        Index of the first pose in *camera*
        
-     * pose2 - index of the second
-       camera pose
+    pose2 : int
+        Index of the second pose in *camera*
        
-     * coorsxy - homogeneous camera 
-       coordinates: 
-        + numpy.ndarray 
-        + numpy.float32
-        + [3, h, w]
+    coorsxy : numpy array, type float32
+        Homogeneous camera coordinates of shape [3, h, w], the first axis
+        represents the coordinate itself.
         
-     * d - pixel depth:
-        + numpy.ndarray
-        + numpy.float32
-        + [h, w]
+    d : numpy array, type float32
+        Array of shape [h,w] that indicates the disparity to use for a 
+        certain pixel while computing the conjugate point.
     
-    Return:
-     numpy.array with shape [3, h, w],
-     representing the new coordinates.
+    Returns
+    -------
+    numpy array, type float32
+        Array  with shape [3, h, w] representing the conjugate coordinates.
     """
     
     # check input validity ----------------------------------------------------
-    assert type(pose1) == int and 0 <= pose1 < len(camera)
-    assert type(pose2) == int and 0 <= pose2 < len(camera)
-    assert isinstance(camera, utils.Camera)
+    #assert type(pose1) == int and 0 <= pose1 < len(camera)
+    #assert type(pose2) == int and 0 <= pose2 < len(camera)
+    #assert isinstance(camera, utils.Camera)
     
-    K = camera.K
-    R1, T1 = camera.Rs[pose1], camera.Ts[pose1]
-    R2, T2 = camera.Rs[pose2], camera.Ts[pose2]
-    h, w = camera.h, camera.w
+    K = sequence.K
+    R1, T1 = sequence.Rs[pose1], sequence.Ts[pose1]
+    R2, T2 = sequence.Rs[pose2], sequence.Ts[pose2]
+    h, w = sequence.height, sequence.width
     
     assert isinstance(coorsxy, np.ndarray)
     assert isinstance(d, np.ndarray)
@@ -187,22 +223,21 @@ def conujugate_coordinates(camera, pose1, pose2, coorsxy, d):
 
 #------------------------------------------------------------------------------
 def L2_norm(img_a, img_b, keepdims=True):
-    """
-    Compute the norm of the per-pixel difference between the two images.
+    """Compute the norm of the per-pixel difference between the two images.
     
-    Arguments:
-      * img_a - first image, numpy.array 
-        of type np.float32 [h, w, 3]
+    Parameters
+    ----------
+    img_a :  numpy array, type float32
+        First image, shape [h, w, 3]
         
-      * uImg_b - second image, numpy.array 
-        of type np.float32 [h, w, 3]
+    img_b : numpy array, type float32
+        Second image, shape [h, w, 3]
     
-    Returns:
-      numpy.array representing the norm of the difference
-      between the two images.
-      
-      shape [h, w, 1] if keepdims == True
-      shape [h, w] if keepdims == False
+    Returns
+    -------
+    numpy array 
+        Array representing the norm of the difference between the two images.
+        The array has shape [h, w, 1] if ``keepdims==True``, [h, w] otherwise.
     """
 
     assert isinstance(img_a, np.ndarray)
@@ -218,65 +253,27 @@ def L2_norm(img_a, img_b, keepdims=True):
     return np.sqrt(np.sum(np.square(img_a-img_b), axis=-1, keepdims=keepdims))
 
 #------------------------------------------------------------------------------
-def lambda_factor(image):
-    '''
-    Compute the smoothness weight matrix for the LBP algorithm.
-    
-    Arguments:
-     * image - numpy.array of type np.npfloat32 [h,w,3]
-     
-    Return:
-      list of numpy.array containing the smoothness weights
-      [h,w], one matrix per neighbor direction.
-    '''
-    assert isinstance(image, np.ndarray)
-    assert image.dtype == np.float32
-    assert len(image.shape) == 3
-    
-    h, w, _ = image.shape
-    ws = params.W_S
-    directions = params.DIRECTIONS
-    img = [None]*len(directions)
-    lambda_factor = [None]*len(directions)
-    
-    up, do, le, ri = params.UP,params.DOWN, params.LEFT, params.RIGHT
-    img[up] = cv2.warpAffine(image, params.AFFINE_DIR[do], dsize=(w, h))
-    img[do] = cv2.warpAffine(image, params.AFFINE_DIR[up], dsize=(w, h))
-    img[le] = cv2.warpAffine(image, params.AFFINE_DIR[ri], dsize=(w, h))
-    img[ri] = cv2.warpAffine(image, params.AFFINE_DIR[le], dsize=(w, h))
-    u_denominator = np.zeros([h,w], dtype=np.float32)
-    
-    # compute partial lambda factor and the denominator for the u_lambda term
-    for j in directions:
-        inverse_color_diff = np.float32(1)/(L2_norm(image, img[j], False) + params.EPSILON)
-        u_denominator += inverse_color_diff # compute denominator for u_lambda term
-        lambda_factor[j] = inverse_color_diff # compute partial lambda factor
-    
-    # compute u_lambda term (approximation of the term, incorrect on image borders)
-    u_lambda = np.float32(4)/u_denominator
-    
-    # compute final lambda smoothness weight for each edge
-    for j in directions:
-        lambda_factor[j] = ws*u_lambda*lambda_factor[j]
-    
-    return lambda_factor
-
-#------------------------------------------------------------------------------
 def homogeneous_coord_grid(h,w):
-    '''
-    Compute grid of homogeneous coordinates having three dimensions.
+    '''Compute grid of homogeneous coordinates having three dimensions.
     
-    Arguments:
-     * h - integer value
-     * w - integer value
+    Parameters
+    ----------
+    h : int
+        height
+    w : int
+        width
      
-    Return:
-        out, grid of homogeneous coordinates 
-        with shape [3,h,w] and such that
-         out[0,y,:] = y
-         out[1,:,x] = x
-         out[2,:,:] = 1
-        '''
+    Returns
+    -------
+    out : numpy array, type float32
+        Grid of homogeneous coordinates with shape [3, h, w], whose first
+        axis indicates the coordinate itself, that is,
+        
+        | ``out[0, y, :] = y``
+        | ``out[1, :, x] = x``
+        | ``out[2, :, :] = 1``
+
+    '''
     assert type(h) == int
     assert type(w) == int
     
@@ -290,3 +287,82 @@ def homogeneous_coord_grid(h,w):
                np.ones([1, h, w], np.float32))
     
     return np.concatenate([X, Y, Z], axis=0)
+
+#------------------------------------------------------------------------------
+def lambda_factor(image, ws=1.0, epsilon=1.0):
+    '''Compute the smoothness weights for the LBP algorithm.
+
+    This functions computes the edge weights that will be used during the
+    executiong of the *Loopy Belief Propagation* algorithm.
+    The values are inversely proportional to the difference between 
+    adjacent pixels' colors.
+
+    Notes
+    -----
+    the math formula used to compute the lambda factor for an edge `(x,y)`, 
+    is given by
+
+    .. math::
+
+        \\lambda(x,y) = w_s\\cdot \\frac{u_\\lambda(x)}{||I(x) - I(y)|| + \\epsilon},
+
+    with :math:`w_s` and :math:`\\epsilon` positive constant values, :math:`I(x)`
+    the image's color at pixel `x`, and :math:`u_\\lambda(x)` is
+
+    .. math::
+
+        u_\\lambda(x) = {|N(x)|}\\big/{\\sum_{y'\\in N(x)} \\frac{1}{||I(x) - I(y')||+\\epsilon}}.
+
+    See Also
+    --------
+    lbp.lbp : *Loopy Belief Propagation* implementation.
+
+    Parameters
+    ----------
+    image : numpy array, type float32
+        Array representing an image (so with shape [`h`, `w`, 3]).
+     
+    Returns 
+    -------
+    list of numpy arrays, type float32
+      Said list contains four smoothness weight arrays with shape 
+      [`h`, `w`]; one matrix per neighbor direction. More precisely, 
+      if we denote the four matrices as :math:`M_{up}, M_{down}, M_{left}, M_{right}`,
+      we have that
+
+      * :math:`M_{up}[y,x] = \\lambda((y,x), (y+1, x)),`
+      * :math:`M_{down}[y,x] = \\lambda((y,x), (y-1, x)),`
+      * :math:`M_{left}[y,x] = \\lambda((y,x), (y, x+1)),`
+      * :math:`M_{right}[y,x] = \\lambda((y,x), (y, x-1)).`
+
+    '''
+    assert isinstance(image, np.ndarray)
+    assert image.dtype == np.float32
+    assert len(image.shape) == 3
+    
+    h, w, _ = image.shape
+    directions = utils.DIRECTIONS
+    img = [None]*len(directions)
+    lambda_factor = [None]*len(directions)
+    
+    up, do, le, ri = utils.UP,utils.DOWN, utils.LEFT, utils.RIGHT
+    img[up] = cv2.warpAffine(image, utils.AFFINE_DIR[do], dsize=(w, h))
+    img[do] = cv2.warpAffine(image, utils.AFFINE_DIR[up], dsize=(w, h))
+    img[le] = cv2.warpAffine(image, utils.AFFINE_DIR[ri], dsize=(w, h))
+    img[ri] = cv2.warpAffine(image, utils.AFFINE_DIR[le], dsize=(w, h))
+    u_denominator = np.zeros([h,w], dtype=np.float32)
+    
+    # compute partial lambda factor and the denominator for the u_lambda term
+    for j in directions:
+        inverse_color_diff = np.float32(1)/(L2_norm(image, img[j], False) + epsilon)
+        u_denominator += inverse_color_diff # compute denominator for u_lambda term
+        lambda_factor[j] = inverse_color_diff # compute partial lambda factor
+    
+    # compute u_lambda term (approximation of the term, incorrect on image borders)
+    u_lambda = np.float32(4)/u_denominator
+    
+    # compute final lambda smoothness weight for each edge
+    for j in directions:
+        lambda_factor[j] = ws*u_lambda*lambda_factor[j]
+    
+    return lambda_factor

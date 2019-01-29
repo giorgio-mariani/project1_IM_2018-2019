@@ -4,32 +4,107 @@ import os
 import cv2 
 import numpy as np
 
-import params
+import json
 
 
+# neighbourhood parameters
+UP, DOWN, LEFT, RIGHT = 0,1,2,3
+DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
+AFFINE_DIR = {UP:   np.array([[1, 0, 0], [0, 1,-1]], dtype=np.float32),
+              DOWN: np.array([[1, 0, 0], [0, 1, 1]], dtype=np.float32),
+              LEFT: np.array([[1, 0,-1], [0, 1, 0]], dtype=np.float32),
+              RIGHT:np.array([[1, 0, 1], [0, 1, 0]], dtype=np.float32)}
 
+#------------------------------------------------------------------------
+class Sequence():
+    """
 
-#------------------------------------------------------------------------------
-class Camera():
-    def __init__(self, filename, height, width):
-        self.h = height
-        self.w = width
-        Ks, Rs, Ts = self._get_camera_matrices(filename)
+    Attributes
+    ----------
+    height : int
+        height of the camera (important for intrinsic matrix).
+
+    width : int
+        width of the camera (important for intrinsic matrix).
+
+    K : numpy matrix, type float32
+        Matrix with shape `[3, 3]` representing the *intrinsic matrix* of
+        the camera.
+
+    Rs : list of numpy matrix, type float32
+        List of numpy matrices with shape `[3, 3]` representing the 
+        *rotations* of the camera during the sequence.
+
+    Ts : list of numpy matrix, type float32
+        List of numpy matrices with shape `[1, 3]` representing the 
+        *translations* of the camera during the sequence.
+
+    I : list of numpy arrays, type float32
+        List of numpy arrays with shape `[h,w,3]`, representing the 
+        images in the sequence. It must be true that `end - start = len(I)`
+
+    D : list of numpy arrays, optional, type uint16
+        List of numpy arrays with shape `[h,w]`, containing previously 
+        estimated depth-maps of the sequence. If this parameter is passed
+        as input then the sequence will use *bundle optimization*.
+        It must be true that `end - start = len(I)`.
+
+    Parameters
+    ----------
+    configparams : dict
+        Configuration parameters. This dictionary contains information about 
+        necessary files directories, as well as the values for various 
+        parameters used by the system.
+
+    """
+
+    def __init__(self, configparams):
+
+        camera_file = configparams["camera_file"]
+        pictures_dir = configparams["pictures_directory"]
+        pictures_ext = configparams["pictures_file_extension"]
+        depthmap_dir = configparams["depthmaps_directory"]
+
+        height = configparams["height"]
+        width = configparams["width"]
+        start = configparams["start_frame"]
+        end = configparams["end_frame"]
+
+        self.depth_levels = configparams["depth_levels"]
+        self.depth_min = np.float32(configparams["depth_min"])
+        self.depth_max = np.float32(configparams["depth_max"])
+
+        self.height = height
+        self.width = width
+        self.start = start
+        self.end = end
+
+        # setup camera parameters-----------------------------------------
+        Ks, Rs, Ts = self._load_camera_params(camera_file)
         
+        if len(Rs) < end or len(Ts) < end:
+            raise StandardError()
+
         self.K = Ks[0]
-        self.Rs = Rs
-        self.Ts = Ts
+        self.Rs = Rs[start:end]
+        self.Ts = Ts[start:end]
+
+        orig_width = (self.K[0,2]+0.5)*2
+        orig_height = (self.K[1,2]+0.5)*2
         
-        o_w = (self.K[0,2]+0.5)*2
-        o_h = (self.K[1,2]+0.5)*2
-              
-        self.K[0, 0] = self.K[0,0]*width/o_w
-        self.K[1, 1] = self.K[1,1]*height/o_h
+        # necessary if target resultion is different from the one used 
+        # to estimate the camera parameters.
+        self.K[0, 0] = self.K[0,0]*width/orig_width
+        self.K[1, 1] = self.K[1,1]*height/orig_height
         
         self.K[0, 2] = width/2.0 + 0.5
         self.K[1, 2] = height/2.0 + 0.5
-       
-    def _get_camera_matrices(self, filename):
+        #-----------------------------------------------------------------
+        self.I = self._load_pictures(pictures_dir, pictures_ext, start, end)
+        self.D = None if depthmap_dir is None else self._load_depthmaps(
+            depthmap_dir, start, end)
+
+    def _load_camera_params(self, filename):
         with open(filename,'r') as f:
             frame_num = int(f.readline())
             f.readline()
@@ -56,98 +131,126 @@ class Camera():
                 f.readline()
         return K_sequence, R_sequence, T_sequence
 
-    def __len__(self):
-        return len(self.Ts)
+    def _load_pictures(self, directory, file_ext, start, end):
+        I = []
+        for i in range(start, end):
+            img_name = os.path.join(directory,"img_"+str(i).zfill(4)+file_ext)
+            img = cv2.imread(img_name)
+            if img is None:
+                raise StandardError("Image "+img_name+" not found in picture sequence directory ("+directory+")!")
+            I.append(np.float32(cv2.resize(img, (self.width,self.height))))
+        return I
+
+    def _load_depthmaps(self, directory, start, end):
+        D = []
+        for i in range(start, end):
+            depthmap_name = os.path.join(directory, "depth_"+str(i).zfill(4)+".npy")
+            try:
+                depthmap = np.load(depthmap_name)
+                D.append(depthmap)
+            except IOError as e:
+                raise StandardError("Depth-map file "+depthmap_name+" not found in depth sequence directory ("+directory+")!")
+
+        # TODO check correct format shape height, width, labels
+        return D
+    #--------------------------------------------------------------------------
+    
+    def use_bundle(self):
+        """Return if this sequence can be used for *bundle optimization*,
+        that is, if it contains previously estimated depth-maps.
+
+        Returns
+        -------
+        bool
+            Whether the sequence can be used with *bundle optimization*.
+        """
+        return self.D != None
+
 
 #------------------------------------------------------------------------------
-class PictureSequence():
-    def __init__(self, 
-                 directory, 
-                 file_extension, 
-                 height=None, 
-                 width=None, 
-                 maxlength=None):
-        
-        if height is not None: assert type(height) == int
-        if width is not None: assert type(width) == int
-        if maxlength is not None: assert type(maxlength) == int
-        assert type(directory) == str
-        assert type(file_extension) == str
 
-        self._imgfiles = self._get_sequence_files(directory, file_extension)
-        length = min(len(self._imgfiles), maxlength)
-        self._imgfiles = self._imgfiles[:length]
-            
-        h, w, _ = cv2.imread(self._imgfiles[0], cv2.IMREAD_COLOR).shape
-        self.height = h if height is None else height
-        self.width = w if width is None else width
-        
-    def _get_sequence_files(self, directory_name, target_extension):
-        sequence_files = []
-        for f in os.listdir(directory_name):
-            full_name = os.path.join(directory_name, f)
-            if os.path.isfile(full_name):
-                _, extension = os.path.splitext(full_name)
-                if target_extension == extension:
-                    sequence_files.append(full_name)
-                    
-        if len(sequence_files) == 0:
-            raise StandardError('No sequence file in the directory')
-        return sequence_files
+
+def parse_configfile(filename):
+    """Parse a configuration file and return a dictionary containing the
+    various parameters used by the system.
+
+    For a more in detail explanation of the parameters contained in the 
+    configuration file, and its format see :ref:`config-file`.
     
-    def get_filename(self, index, extension=True):
-        filename = os.path.basename(self._imgfiles[index])
-        if not extension:
-            filename, extension = os.path.splitext(filename)
-        return filename
-        
-    def __getitem__(self, index):
-        img = cv2.imread(self._imgfiles[index])
-        img = cv2.resize(img, (self.width,self.height))
-        return img
+    Parameters
+    ----------
+    filename : str or unicode
+        Relative or absolute path to the configuration file.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the system parameters. If a parameter-value
+        pair was not in the configuration file then its value is ``None``.
+
+    """
+
+    assert isinstance(filename, basestring) 
+
+    # TODO add correct error messages
     
-    def __len__(self):
-        return len(self._imgfiles)
+    required_keys = {
+        "camera_file":basestring,
+        "pictures_directory":basestring,
+        "output_directory":basestring,
+        "pictures_file_extension":basestring,
+        "height":int,
+        "width":int,
+        "start_frame":int,
+        "end_frame":int,
+        "depth_levels":int,
+        "depth_min": float,
+        "depth_max":float
+    }
 
-#------------------------------------------------------------------------------
-class DepthSequence():
-    def __init__(self, directory, pic_sequence, maxlength=None):
-        
-        assert isinstance(pic_sequence, PictureSequence)
-        assert type(directory) == str
-        if maxlength is not None : assert type(maxlength) == int
-
-        self._depthfiles = self._get_depth_files(directory, pic_sequence, maxlength)
-        self.height = pic_sequence.height
-        self.width = pic_sequence.width
-        
-    def _get_depth_files(self, directory_name, pic_sequence, maxlength):
-        ext = '.npy'
-        seq_files = []
-        if maxlength is None or maxlength < len(pic_sequence):
-            length = len(pic_sequence)
-        else:
-            length = maxlength
-
-        for i in range(length):
-            filename = pic_sequence.get_filename(i, extension=False)
-            seq_files.append(os.path.join(directory_name, filename+ext))
-                    
-        if len(seq_files) == 0:
-            raise StandardError('No sequence file in the directory')
-        return seq_files
+    optional_keys = {
+        "depthmaps_directory":basestring,
+        "sigma_c": float,
+        "sigma_d":float,
+        "eta": float,
+        "w_s": float,
+        "epsilon": float,
+        "window_side": int,
+    }
     
-    def __getitem__(self, index):
-        depthmap = np.load(self._depthfiles[index])
+    # try to parse the file as a json object
+    try:
+        with open(filename,'r') as fp:
+            jobj = json.load(fp=fp)
+    except Exception as e:
+        raise StandardError()
         
-        assert depthmap.shape == (self.height, self.width)
-        assert depthmap.dtype == np.uint16
-        return depthmap
+    # check if jason file contains a json object
+    if type(jobj) != dict :
+        raise StandardError("Configuration file file should contain a single JSON object!")
     
-    def __len__(self):
-        return len(self._depthfiles)
+    # check for correct type
+    for key in required_keys:
+        if key not in jobj:
+            raise StandardError("parameter "+key+" is not in the configuration file JSON object!")
+        elif not isinstance(jobj[key], required_keys[key]):
+            raise StandardError("parameter "+key+" has the wrong value: expected "+str(required_keys[key])+", received "+str(type(jobj[key]))+"!")
 
-#------------------------------------------------------------------------------
+    for key in optional_keys:
+        if key not in jobj:
+            jobj[key] = None
+        elif not isinstance(jobj[key], optional_keys[key]):
+            raise StandardError("parameter "+key+" has the wrong value: expected "+str(optional_keys[key])+", received "+str(type(jobj[key]))+"!")
+
+    # convert relative paths into absolute paths
+    absdirname = os.path.dirname(os.path.abspath(filename))
+    for key in ["camera_file","depthmaps_directory","pictures_directory", "output_directory"]:
+        if jobj[key] is not None:
+            jobj[key] = os.path.join(absdirname,jobj[key])
+    
+    return jobj
+
+###############################################################################
 
 def show_image(img, secs=0, close_after=True):
     cv2.imshow('image', cv2.UMat(img))
@@ -180,78 +283,221 @@ def load_image_depth(filename, width, height):
             
             w = (w + 1) % width
             h = h + 1 if w==0 else h 
-            disp = read_float()            
+            disp = read_float()
     return I
-
-def debug_depth_estimation(
-        camera_file,
-        source_folder,
-        depths_folder=None,
-        height=300,
-        width=400,
-        **options):
-    
-    import lbp
-    import initialization as init
-    import compute_energy as ce
-    import params
-    
-    sequence = PictureSequence(
-        source_folder, '.jpg',
-        height=height, 
-        width=width)
-
-    camera = Camera(
-            camera_file, 
-            height=sequence.height, 
-            width=sequence.width)
-    
-    WINDOW_SIZE = (1920, 1080)
-    USE_BUNDLE = depths_folder != None
-    
-    SHOW_LAMBDA_WEIGTHS = options.get("show_lambda",False)
-    SHOW_DEPTH_ESTIMATION_PROCESS = options.get("show_depth_levels",False)
-    SHOW_DEPTH_INIT = options.get("show_init",False)
-    SHOW_DEPTH_LBP = options.get("show_lbp",False)
-    FRAME_INDEX =  options.get("frame",0)
-    
-    if USE_BUNDLE:
-        dep_sequence = DepthSequence(depths_folder, sequence)
-        D = ce.compute_energy_data(camera, FRAME_INDEX, sequence, dep_sequence)
-    else:
-        D = ce.compute_energy_data(camera, FRAME_INDEX,sequence)
-    
-    lambda_weights = ce.lambda_factor(np.float32(sequence[FRAME_INDEX]))
-    
-    if SHOW_LAMBDA_WEIGTHS:
-        for i in range(4):
-            show_depthmap(cv2.resize(lambda_weights[i], WINDOW_SIZE)) 
-    
-    if SHOW_DEPTH_ESTIMATION_PROCESS:
-        for i in range(params.DEPTH_LEVELS):
-            show_depthmap(cv2.resize(D[i], WINDOW_SIZE), 100, False)
-        cv2.destroyAllWindows()
-    
-    if SHOW_DEPTH_INIT:
-        bundle = np.float32(D.argmin(axis=0))
-        show_depthmap(cv2.resize(bundle, WINDOW_SIZE))
-    
-    if SHOW_DEPTH_LBP:
-        lbp = np.float32(lbp.LBP(D, lambda_weights))  
-        show_depthmap(cv2.resize(lbp, WINDOW_SIZE))
 
 ###############################################################################
 
+'''
+#------------------------------------------------------------------------------
+class Camera():
+    """Used to maintain camera sequence information such as *rotations*, 
+    *translations* and *intrinsic parameters*.
+
+    Attributes
+    ----------
+    height: int
+        height of the camera (important for intrinsic matrix).
+
+    width: int
+        width of the camera (important for intrinsic matrix).
+
+    K: numpy matrix, type float32
+        Matrix with shape `[3, 3]` representing the *intrinsic matrix* of
+        the camera.
+
+    Rs: list of numpy matrix, type float32
+        List of numpy matrices with shape `[3, 3]` representing the 
+        *rotations* of the camera during the sequence.
+
+    Ts: list of numpy matrix, type float32
+        List of numpy matrices with shape `[3, 3]` representing the 
+        *translations* of the camera during the sequence.
 
 
+    Parameters
+    ----------
+    configparams: dict
+        Configuration parameters. It should contain the camera file location.
+
+    """
+
+    def __init__(self, configparams):
+
+        filename = configparams["camera_file"]
+        height = configparams["height"]
+        width = configparams["width"]
+
+        self.height = height
+        self.width = width
+        Ks, Rs, Ts = self._get_camera_matrices(filename)
+        
+        self.K = Ks[0]
+        self.Rs = Rs
+        self.Ts = Ts
+        
+        o_w = (self.K[0,2]+0.5)*2
+        o_h = (self.K[1,2]+0.5)*2
+
+        # necessary if target resultion is different from the one used 
+        # to estimate the camera parameters.
+        self.K[0, 0] = self.K[0,0]*width/o_w
+        self.K[1, 1] = self.K[1,1]*height/o_h
+        
+        self.K[0, 2] = width/2.0 + 0.5
+        self.K[1, 2] = height/2.0 + 0.5
+
+    def _get_camera_matrices(self, filename):
+        with open(filename,'r') as f:
+            frame_num = int(f.readline())
+            f.readline()
+            
+            def read_vector():
+                vec = f.readline().split()
+                return np.array([float(x) for x in vec], dtype=np.float32)
+                
+            def read_matrix():
+                r1 = read_vector()
+                r2 = read_vector()
+                r3 = read_vector()
+                return np.matrix([r1,r2,r3], dtype=np.float32)
+            
+            K_sequence = [None]*frame_num
+            R_sequence = [None]*frame_num
+            T_sequence = [None]*frame_num
+            
+            for i in range(frame_num):
+                K_sequence[i] = read_matrix()
+                R_sequence[i] = read_matrix()
+                T_sequence[i] = np.asmatrix(read_vector())
+                f.readline()
+                f.readline()
+        return K_sequence, R_sequence, T_sequence
+
+#------------------------------------------------------------------------------
+class PictureSequence():
+
+    def __init__(self, configparams):
+        directory = configparams["pictures_directory"]
+        file_extension = configparams["pictures_file_extension"]
+        height = configparams["height"]
+        width = configparams["width"]
+        start = configparams["start_frame"]
+        end = configparams["end_frame"]
+
+        self._imgfiles = _get_directory_files(directory, file_extension)
+        self.height = height
+        self.width = width
+        self.start = start
+        self.end = end
+        
+        if len(self._imgfiles) == 0:
+            raise StandardError("The picture sequence directory is empty!")
+            
+        if start < 0 or start >= len(self._imgfiles):
+            raise StandardError("Invalid start frame for picture sequence! it must be greater than or equal to 0 and less than "+str(len(self._imgfiles)))
+        
+        if end < start or end > len(self._imgfiles):
+            raise StandardError("Invalid end frame for picture sequence! it must be greater than the start fram and less than or equal to "+str(len(self._imgfiles)))
 
 
+    def __getitem__(self, index):
+        """
+
+        """
+        img = cv2.imread(self._imgfiles[index])
+        img = cv2.resize(img, (self.width,self.height))
+        return img
+
+#------------------------------------------------------------------------------
+class DepthSequence():
+    """Represent a sequence of depth-maps.
+
+    An instance of this class represents a sequence of depth-maps; more
+    precisely, it is used as an interface to access depth-maps stored in a 
+    given directory. The used directory is indicated in the configuration 
+    file.
+    The method :meth:`DepthSequence.__get__`(`i`) allows to retrieve the
+    depth-map with name *depth_`i`* (`i` must be between 0000 and 9999).
 
 
+    Attributes
+    ----------
+    height: int
+        Height of the depth-maps in the sequence.
+
+    width: int
+        Height of the depth-maps in the sequence.
+
+    start: int
+        Start index of the sequence. All the depth-maps in the depth 
+        directory. included between *start* and *end*-1 are part of 
+        the depth-map sequence indicated by an instance of this class.
+
+    end : int
+        End index of the sequence w.r.t. all the depth-maps in the 
+        depth directory. The index is not included in the sequence;
+        that is, the last included index is `end - 1`.
+
+    Parameters
+    ----------
+    configparams: dict
+        Configuration parameters. It should contain the picture sequence 
+        directory location and other necessary information.
+
+    """
+
+    def __init__(self, configparams):
+        
+        assert type(configparams) == dict
+        
+        # get necessary parameters from config file
+        directory = configparams["depthmaps_directory"]
+        height = configparams["height"]
+        width = configparams["width"]
+        start = configparams["start_frame"]
+        end = configparams["end_frame"]
+        
+        self._depthfiles = _get_directory_files(directory, ".npy")
+        self.height = height
+        self.width = width
+        self.start = start
+        self.end = end
+        
+        if len(self._depthfiles) == 0:
+            raise StandardError("The depthmap sequence directory is empty!")
+
+        if start < 0 or start >= len(self._depthfiles):
+            raise StandardError("Invalid start frame for depthmap sequence! it must be greater than or equal to 0 and less than "+str(len(self._depthfiles)))
+        
+        if end < start or end > len(self._depthfiles):
+            raise StandardError("Invalid end frame for depthmap sequence! it must be greater than the start frame and less than or equal to "+str(len(self._depthfiles)))
+
+    def __getitem__(self, index):
+        """Retrieve depth-map at position *index*.
 
 
+        """
+        depthmap = np.load(self._depthfiles[index])
+        
+        assert depthmap.shape == (self.height, self.width)
+        assert depthmap.dtype == np.uint16
+        return depthmap
 
 
+def _get_directory_files(directory_name, file_extension):
+    sequence_files = []
+    # TODO check if directory exists, if not raise standard error
+
+    for f in os.listdir(directory_name):
+        full_name = os.path.join(directory_name, f)
+        if os.path.isfile(full_name):
+            _, extension = os.path.splitext(full_name)
+            if file_extension == extension:
+                sequence_files.append(full_name)
+    return sequence_files
+'''
+'''
 def test_projection():
     import compute_energy as ce
     
@@ -289,3 +535,4 @@ def test_projection():
     img_i_projected = cv2.remap(sequence[i], remap, None, cv2.INTER_NEAREST, borderValue=[128,128,128])
     img = cv2.resize(img_i_projected,(w*2,h*2))
     show_image(img)
+'''

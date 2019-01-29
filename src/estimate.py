@@ -7,110 +7,126 @@ import cv2
 import lbp
 import utils
 import compute_energy as ce
-import params
-
-
-SCALE = 0.15
-WIDTH = int(960*SCALE)
-HEIGHT = int(540*SCALE)
-
-PIC_DIRNAME = '../video sequences/lawn/'
-DEP_DIRNAME =  'depths/405h_720w_40d_init/'
-
-'''
-utils.debug_depth_estimation(
-        camera_file=PIC_DIRNAME+'cameras.txt',
-        source_folder=PIC_DIRNAME+'src',
-        #depths_folder=DEP_DIRNAME,
-        height=HEIGHT,
-        width=WIDTH,
-        show_lambda=True,
-        show_depth_levels=True,
-        show_init=True,
-        show_lbp=True,
-        frame=10)'''
-
-
 
 ###############################################################################
 
-def estimate(
-        out_dir,
-        camera,
-        pic_sequence,
-        dep_sequence=None):
+def estimate(configfile):
+    """Estimate and store depthmaps from a picture sequence.
+
+    The picture sequence directory, and a configuration parameters is 
+    obtained by reading the configuration file *configfile*. The 
+    estimated depth-maps are subsequently stored in an output directory 
+    specified in the aforementioned file. To read a more in-depth explanation
+    of the parameters in *configfile* see :ref:`config-file`.
+
+    Notes
+    -----
+    If the configuration parameter ``depthmaps_directory`` is not **null** 
+    then *bundle optimization* is performed during estimation.
+
+    See Also
+    --------
+    compute_frame
+
+    Parameters
+    ----------
+    configfile : str or unicode
+        Filename of the configuration file.
+    """
+
+    configparams = utils.parse_configfile(configfile)
     
-    assert isinstance(pic_sequence, utils.PictureSequence)
-    assert isinstance(camera, utils.Camera)
-    assert type(out_dir) == str
+    # create necessary objects
+    out_dir = configparams["output_directory"]
+    sequence = utils.Sequence(configparams)
     
     # check output directory constraints:
     if os.path.isdir(out_dir):
-        raise "The output directory already exists, remove it in order to proceed!"
+        raise StandardError("The output directory already exists, remove it in order to proceed!")
     if os.path.exists(out_dir):
-        raise "The output directory name is already used by another file/resource, remove it in order to proceed!"
+        raise StandardError("The output directory name is already used by another file/resource, remove it in order to proceed!")
     
     # create output directory (TODO remove if an exception occur and the folder is empty)
     os.mkdir(out_dir)
     
-    # create directory stat file
-    '''stats = '\n'.join(
-        ["height="+str(pic_sequence.height),
-         "width="+str(pic_sequence.width),
-         "levels="+str(params.DEPTH_LEVELS)])'''
-
-    for i in range(len(pic_sequence)):
+    for i in range(sequence.start, sequence.end):
         print "Estimating depth-map for frame ", str(i)
-        depthmap = compute_frame(i, camera, pic_sequence, dep_sequence)
-    
+        depthmap = compute_frame(i-sequence.start, sequence, configparams)
+        depthmap_filename = os.path.join(out_dir, "depth_"+str(i).zfill(4))
+
         # save depth info            
-        filename = os.path.join(out_dir, pic_sequence.get_filename(i, extension=False))
-        np.save(filename, depthmap)
+        np.save(depthmap_filename, depthmap)
         
         # save picture of image (useful for debug purposes)
-        M = np.float32(depthmap.max())
-        cv2.imwrite(filename+'.png', np.uint8(depthmap/M*255))
+        Max = np.float32(depthmap.max())
+        cv2.imwrite(depthmap_filename+'.png', np.uint8(depthmap/Max*255))
 
-def compute_frame(frame, camera, pic_sequence, dep_sequence=None):
-    """
-    Compute the (per-pixel) depth labels for a single frame in the sequence.
-    
-    Arguments:
-     :frame: frame whose depth-map is computed
-     :camera: utils.Camera containing the camera parameters for the sequence
-     :pic_sequence: utils.PictureSequence representing the input sequence
-     :depth_sequence: utils.DepthSequence representing the depth-maps used during bundle phase
-     
-    Return:
-     a numpy.ndarray with type np.uint16 representing the per-pixel depth labels.
-     The sahpe of such array is [height, width] (with h and w heigth and width of the input frame).
+def compute_frame(frame, sequence, configparams):
+    """Estimate the (per-pixel) depth labels for a single frame in the sequence.
+
+    This function executes the depth-map estimation for the frame *frame*, 
+    given the input sequence *sequence*. If ``sequence.use_bundle()==True``
+    then *bundle optimization* is performed using the depth-maps in
+    *sequence*.
+
+    Parameters
+    ----------
+    frame : int
+        Frame whose depth-map is estimated.
+
+    sequence : utils.Sequence
+        Object containing parameters necessary to the depth-maps estimation.
+        It contains the camera matrices, picture arrays, length of the
+        sequence, etc. If the sequence instance contains also
+        previously estimated depth-maps, then the *bundle optimization*
+        phase is also executed.
+
+    configparams : dict 
+        Configuration parameters. It contains information about 
+        necessary files directories, as well as the values for various
+        parameters used by the system.
+
+    Returns
+    -------
+    numpy array, type uint16
+        An array representing the per-pixel depth labels. The shape of 
+        such array is `[h, w]` (with `h` and `w` heigth and width of 
+        the input frame).
     """
     assert type(frame) == int
 
+    # compute parameters
+    depth_range = sequence.depth_max - sequence.depth_min
+    step = depth_range/sequence.depth_levels
+    eta_default = 0.05*depth_range
+    ws_default = 5.0/depth_range
+
+    # read parameters from configuration file
+    sigma_c = configparams["sigma_c"] or 10
+    sigma_d = configparams["sigma_d"] or 2.5
+    eta = configparams["eta"] or eta_default
+    ws = configparams["w_s"] or ws_default
+    epsilon = configparams["epsilon"] or 1.0
+    window_side = configparams["window_side"] or 10
+
     # compute the per-pixel weight to be used during LBP
-    pixels_weights = ce.compute_energy_data(camera, frame, pic_sequence, dep_sequence)
+    pixels_weights = ce.compute_energy_data(
+        frame_index=frame,
+        sequence=sequence,
+        window_side=window_side,
+        sigma_c=sigma_c,
+        sigma_d=sigma_d)
     
     # compute edges' weights for LBP
-    edges_weights = ce.lambda_factor(np.float32(pic_sequence[frame]))
+    edges_weights = ce.lambda_factor(
+        image=sequence.I[frame], 
+        ws=ws, 
+        epsilon=epsilon)
     
     # execute LBP algorithm
-    depthmap_indices = lbp.LBP(pixels_weights, edges_weights)
+    depthmap_indices = lbp.lbp(pixels_weights, edges_weights, eta=eta, step=step)
     return depthmap_indices
 
 #------------------------------------------------------------------------------
 
-sequence = utils.PictureSequence(
-        PIC_DIRNAME+'src', '.jpg',
-        height=HEIGHT, 
-        width=WIDTH,
-        maxlength=50)
-
-camera = utils.Camera(
-        PIC_DIRNAME+'cameras.txt', 
-        height=sequence.height, 
-        width=sequence.width)
-
-dep_sequence = utils.DepthSequence('out_bundle', sequence)
-
-estimate('out_bundle2', camera, sequence, dep_sequence)
-    
+#estimate('../configfile_example.txt')

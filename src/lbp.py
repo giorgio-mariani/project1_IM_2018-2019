@@ -5,50 +5,76 @@ Loopy Belief Propagation
 import numpy as np
 
 import cv2
-import params
-import compute_energy as ce
 import utils
 
 
 
-def LBP(energy_data, edge_weights):
-    '''
-    Loopy Belief Propagation algorithm.
+def lbp(data_cost, edge_weights, step=1.0, eta=1.0, iterations=4):
+    ''' *Loopy Belief Propagation* (LBP) algorithm.
     
-    This is an implementation of the LBP optimization 
-    algorithm, using as edge cost between two pixels p 
-    and q the function:   
-        V(d_p,d_q) = min(|d_p - d_q|, threshold)
-    
-    The function to optimize is the following:
-    E(d) = sum_{p,q} V(d_p,d_q) + sum_{p} D(d_p)
-    
-    in this case d represent an assignment of the 
-    parameters d_p, for all pixel p.
-    There are m possible assignment for each par.
-    d_p
-    
-    Arguments:
-     :energy_data: data term in the optimizated energy funtion:
-         + numpy.ndarray
-         + numpy.float32
-         + [m, height, width]
+    LBP is a dynamic programming algorithm that can be used to find
+    approximate solutions for energy minimization problems over labeling 
+    of graphs. In particular, LBP works only with grid-graphs, and 
+    this specific implementation works only with graphs representing
+    images; each pixel is a vertex, adjacents pixel are assumed connected
+    by an edge (only in the four cardinal directions, no oblique adjacents).
+
+    Notes
+    -----
+    Given a graph with vertices (pixels) `P` and edges `N`, and a set of
+    labels `L` (with cardinality `m`), the goal of LBP is to find a 
+    labeling of the vertices :math:`\\{f_p\\}_{p \\in V}` such that 
+    the energy function
+
+    .. math::
+
+        \\sum_{(p,q)\\in N} V(f_p,f_q) + \\sum_{p \in P}  D(p, f_p)
+
+    is minimized. The terms :math:`V(\\cdot,\\cdot)` and :math:`D(\\cdot,\\cdot)`
+    are rispecively names **discontinuity cost** and **data cost**.
+    The **data cost** can be any arbitrary mapping between pixel-label pairs
+    over real values (in this case it is passed as input through *data_cost*).
+    On the other hand, the **discontinuity cost** between two pixels `p` 
+    and `q` is defined as
+
+    .. math::
+
+        w_{p,q}\\cdot\\min(s||d_p - d_q||, \\eta) ,
+
+    with :math:`\\eta` and :math:`s` positive constants, while :math:`w_{p,q}` is 
+    an edge dependent scalar value (stored in *edge_weights*).
+
+    Parameters
+    ----------
+    data_cost: numpy array, type float32
+        Array with shape `[labels, height, width]` representing the **data cost** 
+        of the energy funtion.
          
-     :edge_weights: scalar weigths per image edge:
-         + list of numpy.ndarray
-         + numpy.float32
-         + [height, width] * 4 
-    
-    Return:
-        numpy.ndarray containing the depth-values index per pixel:
-         + numpy.ndarray
-         + numpy.uint16
-         + [height, width] 
+    edge_weights: list of numpy arrays, type float32
+        List of four arrays with shape `[height, width]` representing the 
+        weights used by the **discontinuity cost**.
+        
+        * The first array contains weights for edges of type :math:`(p, p_{up})`,
+          with :math:`p=(y,x)` and :math:`p_{up}=(y+1, x)`
+        * The second array contains weights for edges of type :math:`(p, p_{down})`,
+          with :math:`p=(y,x)` and :math:`p_{down}=(y-1, x)`
+        * The third array contains weights of type :math:`(p, p_{left})`,
+          with :math:`p=(y,x)` and :math:`p_{left}=(y, x+1)`
+        * The fourth array contains weights of type :math:`(p, p_{right})`,
+          with :math:`p=(y,x)` and :math:`p_{right}=(y, x-1)`
+
+    Returns
+    -------
+    numpy array, type uint16
+        Array with shape `[height, width]` containing the depth-values labels 
+        (that is, an integer that can be used to obtain the disparity value)
+        per pixel.
     '''
-    assert isinstance(energy_data, np.ndarray)
-    assert energy_data.dtype == np.float32
-    assert len(energy_data.shape) == 3
-    m, h, w = energy_data.shape
+
+    assert isinstance(data_cost, np.ndarray)
+    assert data_cost.dtype == np.float32
+    assert len(data_cost.shape) == 3
+    k, h, w = data_cost.shape
 
     
     assert isinstance(edge_weights, list)
@@ -59,58 +85,47 @@ def LBP(energy_data, edge_weights):
         assert matrix.dtype == np.float32
 
     M = []
-    for _ in params.DIRECTIONS:
-        M.append(np.zeros([h, w, m], dtype=np.float32))
-        
+    for _ in utils.DIRECTIONS:
+        M.append(np.zeros([h, w, k], dtype=np.float32))
+    
     #compute per-pixel energy
-    D = np.transpose(energy_data, [1,2,0])
-    for i in range(params.ITERATION_NUMBER):
+    D = np.transpose(data_cost, [1,2,0])
+    edge_weights = np.expand_dims(edge_weights, axis=-1)
+
+    for i in range(iterations):
         print 'iteration number ', i
-        M = _LBP_iteration(D, M,
-                           edge_weights,
-                           height=h, 
-                           width=w, 
-                           label_count=m)
+
+        H = np.array(D) # [h,w,m]
+        m, hf = [None]*4, [None]*4
+        directions = utils.DIRECTIONS
+        up, do, le, ri = utils.UP,utils.DOWN, utils.LEFT, utils.RIGHT
+
+        for j in directions:
+            H += M[j] #[h,w,m] + [h,w,m]
+            
+        hf[up] = cv2.warpAffine(H-M[do], utils.AFFINE_DIR[do], dsize=(w, h))
+        hf[do] = cv2.warpAffine(H-M[up], utils.AFFINE_DIR[up], dsize=(w, h))
+        hf[le] = cv2.warpAffine(H-M[ri], utils.AFFINE_DIR[ri], dsize=(w, h))
+        hf[ri] = cv2.warpAffine(H-M[le], utils.AFFINE_DIR[le], dsize=(w, h))
+        
+        for j in directions:
+            m[j] = np.array(hf[j])
+
+        for j in directions:
+            for i in range(1, k):
+                m[j][:,:,i] = np.minimum(m[j][:,:,i], m[j][:,:,i-1] + edge_weights[j,:,:,0]*step)
+            for i in reversed(range(0, k-1)):
+                m[j][:,:,i] = np.minimum(m[j][:,:,i], m[j][:,:,i+1] + edge_weights[j,:,:,0]*step)
+            
+        for j in directions:
+            tmp = hf[j].min(axis=-1, keepdims=True) + edge_weights[j]*eta
+            m[j] = np.minimum(m[j], tmp)
+        M = m
+
     B = np.array(D)
-    for i in params.DIRECTIONS:
+    for i in utils.DIRECTIONS:
         B += M[i]
     return np.uint16(B.argmin(axis=-1))
-
-
-def _LBP_iteration(D, M, lambda_weights, height, width, label_count):
-    h, w, k = height, width, label_count
-    
-    lambda_weights = np.expand_dims(lambda_weights, axis=-1)
-    
-    H = np.array(D) # [h,w,m]
-    m, hf = [None]*4, [None]*4
-    directions = params.DIRECTIONS
-    up, do, le, ri = params.UP,params.DOWN, params.LEFT, params.RIGHT
-
-    for j in directions:
-        H += M[j] #[h,w,m] + [h,w,m]
-        
-    hf[up] = cv2.warpAffine(H-M[do], params.AFFINE_DIR[do], dsize=(w, h))
-    hf[do] = cv2.warpAffine(H-M[up], params.AFFINE_DIR[up], dsize=(w, h))
-    hf[le] = cv2.warpAffine(H-M[ri], params.AFFINE_DIR[ri], dsize=(w, h))
-    hf[ri] = cv2.warpAffine(H-M[le], params.AFFINE_DIR[le], dsize=(w, h))
-    
-    for j in directions:
-        m[j] = np.array(hf[j])
-        
-    for j in directions:    
-        for i in range(1, k):
-            m[j][:,:,i] = np.minimum(m[j][:,:,i], m[j][:,:,i-1] + lambda_weights[j,:,:,0]*params.STEP)
-        for i in reversed(range(0, k-1)):
-            m[j][:,:,i] = np.minimum(m[j][:,:,i], m[j][:,:,i+1] + lambda_weights[j,:,:,0]*params.STEP)
-        
-    for j in directions:
-        tmp = hf[j].min(axis=-1, keepdims=True) + lambda_weights[j]*params.ETA
-        m[j] = np.minimum(m[j], tmp)
-    return m
-
-
-
 
 ###############################################################################
 '''

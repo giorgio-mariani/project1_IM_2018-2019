@@ -8,7 +8,7 @@
 
 
 \documentclass[notitlepage,english]{hgbreport}
-\usepackage{cmbright}
+%\usepackage{cmbright}
 \usepackage{xfrac}
 \usepackage{listings}
 \usepackage[utf8]{inputenc}
@@ -16,7 +16,9 @@
 \usepackage{wrapfig}
 \usepackage{tcolorbox}
 
-
+\usepackage{color, colortbl}
+\definecolor{Gray}{gray}{0.925}
+\renewcommand{\arraystretch}{1.15}
 
 
 %acronyms
@@ -30,6 +32,36 @@
 \newcommand{\Graph}{\mathcal{G}}
 
 %---------------------------------------------
+\lstdefinelanguage{JavaScript}{
+	keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+	keywordstyle=\color{blue}\bfseries,
+	ndkeywords={class, export, boolean, throw, implements, import, this},
+	ndkeywordstyle=\color{darkgray}\bfseries,
+	identifierstyle=\color{black},
+	sensitive=false,
+	comment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	commentstyle=\color{purple}\ttfamily,
+	stringstyle=\color{violet}\ttfamily,
+	morestring=[b]',
+	morestring=[b]"
+}
+
+\lstset{
+	language=JavaScript,
+	extendedchars=true,
+	basicstyle=\footnotesize\ttfamily,
+	showstringspaces=false,
+	showspaces=false,
+	numbers=left,
+	numberstyle=\footnotesize,
+	numbersep=9pt,
+	tabsize=2,
+	breaklines=true,
+	showtabs=false,
+	captionpos=b
+}
+%-----------------------------------------------
 
 \graphicspath{{images/}}  % where the images at?
 \bibliography{references}  % requires file 'references.bib'
@@ -104,26 +136,23 @@ The approach proposed in the original article consists of four steps:
 	\item Depth-maps Space-Time Fusion
 \end{enumerate}
 
-\begin{wrapfigure}{R}{.35\textwidth}
-	\centering
-	\includegraphics[width=.34\textwidth]{sfm.png}
-	\caption{ SFM approach visualization}
-\end{wrapfigure}
-
 \paragraph{Camera parameter estimation.} During this phase, the camera parameters (\ie \emph{position}, \emph{rotation}, and \emph{intrinsic matrix}) are estimated, using a \emph{Structure From Motion} (SFM) algorithm; unsurprisingly, the one used in the article is the same as the one described in \cite{Zhang2007}, with Zhang and Bao two of the article's authors.
-
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=.75\textwidth]{sfm.png} %{CS0031}
+	\caption{SFM approach visualization}
+\end{figure}
 
 \paragraph{Depth-maps initialization.} 
 For each frame in the video, a raw estimation of the corresponding depth-map is computed; this is achieved by minimizing a (per-frame) energy function whose parameters are the depth values to estimate.
+These raw depth-maps are successively processed using a plane fitting algorithm: each image is divided into segments using \emph{mean-shift color segmentation} \cite{Comaniciu202}, these segments are then considered as a set of planes and fitted to the existing depth-maps raw values. The resulting images are the initialized depth-maps, ready to be used in the next step.
 
-These raw depth-maps are successively processed using a plane fitting algorithm; each image is divided into segments using \emph{mean-shift color segmentation} \cite{Comaniciu202}. Each segment is then considered as a plane and fitted to the existing depth-maps raw values. The resulting images are the initialized depth-maps, ready to be used in the next step.
-
-\paragraph{Depth-maps bundle optimization.} The depth-maps obtained during the initialization process are then refined by applying geometric coherence constraints. This refinement process iteratively elaborates the given raw data by minimizing an energy function similar to the one used in the previous step, but enriched with geometric constraints.
+\paragraph{Depth-maps bundle optimization.} The depth-maps obtained during the initialization process are then refined by applying geometric coherence constraints. This refinement process iteratively elaborates the given raw data by minimizing an energy function similar to the one used in the previous step, but enriched with geometric-consistency constraints.
 
 \paragraph{Depth-maps space-time fusion.} This is the final step of the process, and it is used to polish the results obtained from the previous steps and removing eventual remaining noise.
 
-The estimated depth-map values are used to define a loss function  that can subsequently be optimized through the use of \emph{Conjugate Gradient Method}, an optimization technique similar to \emph{ Gradient Descent}.
-The designed loss function takes into consideration: \emph{spatial continuity} between already computed depth-values, depth-maps temporal coherence, and consistency with the sparse points obtained by the SFM algorithm used to compute the camera parameters.
+The estimated depth-map values are used to define a loss function  that can subsequently be optimized through the use of iterative \emph{Conjugate Gradient Method}, an optimization technique able to find approximate solution to energy-minimization  problems.
+The designed loss function takes into consideration: \emph{spatial continuity} between already computed depth-values, the estimated depth-maps \emph{temporal coherence}, and consistency with the sparse points obtained by the SFM algorithm used to compute the camera parameters (see first step of the depth-maps estimation process).
 
  
 
@@ -169,9 +198,9 @@ Unfortunately, the official bindings are available only for python 2.7.\textit{x
 \section{Approach in Detail}
 % in this section I will explain the implementation of each algorithm more in detail
  
- The goal of the system is to estimate a sequence of depth-maps $\hat D = D_0, \dots D_n$, using a sequence of pictures $\hat I = I_0, \dots I_n$ and camera paramet,ers: $\{R_i\}_{i=0..n}$, $\{T_i\}_{i=0..n}$, and $K$ (which are respectively  \emph{Rotation}, \emph{Position}, and \emph{intrinsic matrix} of the camera.)
+ The goal of the system is to estimate a sequence of depth-maps $\hat D = D_0, \dots, D_n$, using a sequence of pictures $\hat I = I_0, \dots, I_n$ and camera paramet,ers: $\{R_i\}_{i=0..n}$, $\{T_i\}_{i=0..n}$, and $K$ (which are respectively  \emph{rotation}, \emph{position}, and \emph{intrinsic matrix} of the camera.)
  
- The estimated pixel $x$'s depth/disparity\footnote{The disparity of a certain pixel $x$ correspond to the reciprocal of the pixel's depth ($\frac{1}{z_x}$), however, the terms \emph{depth} and \emph{disparity} are sometimes used interchangeably.} at time $t$ is noted with $D_t(x)$ ($d_x$ for short); the admissible disparity values are taken from the set $[d_{min}, d_{max}]$, consequently to its quantization into $m$ uniformly spaced values $d_{min}=d_0, \dots, d_{m-1} = d_{max}$. This quantization is necessary in order to execute the algorithms utilized by the system (especially true for \emph{Belief Propagation}, since it works over labels, not values in \R).
+ The estimated pixel $x$'s disparity\footnote{The disparity of a certain pixel $x$ correspond to the reciprocal of the pixel's depth ($\frac{1}{z_x}$), however, the terms \emph{depth} and \emph{disparity} are sometimes used interchangeably.} at time $t$ is noted with $D_t(x)$ ($d_x$ for short); the admissible disparity values are taken from the set $[d_{min}, d_{max}]$, subsequently to its quantization into $m$ uniformly spaced values $d_{min}=d_0, \dots, d_{m-1} = d_{max}$. This quantization process is necessary in order to execute the algorithms utilized by the system. This is especially true for \emph{Belief Propagation}, since it makes use of labels, not values in \R.
 
  
  
@@ -215,7 +244,7 @@ $$\rho(d_x,d_y) = \min\{|d_x-d_y|, \eta\}.$$
 The term $\eta$ is a real constant positive value, and it represents the upper limit of this smoothness imposing approach: after $\eta$ the distance between two labels does not matter during the energy minimization.
 
 The value $\rho(\cdot)$ is then weighted using an adaptive smoothness weight $\lambda(x,y)$, which encodes changes of color between the adjacent pixels $x$, $y$: if $x$ and $y$ have strongly different colors in $I_t$ then the disparity smoothness requirement should be less strict, since they are less likely to be in a contiguous three-dimensional area. This is expressed as 
-$$\lambda(x,y) = w_s\cdot \frac{u_y(x)}{|| I_t(x) - I_t(y)|| + \epsilon},$$
+$$\lambda(x,y) = w_s\cdot \frac{u_\lambda(x)}{|| I_t(x) - I_t(y)|| + \epsilon},$$
 with $w_s$ a constant real positive value and $u_{\lambda}(x)$ a normalization factor
 $$
 	u_{\lambda}(x) = {|N(x)|}\big/{\sum_{y'\in N(x)} \frac{1}{||I_t(x) - I_t(y')||+\epsilon}}.
@@ -238,7 +267,6 @@ Finally, using \emph{mean-shift segmentation}, it is possible to divide an image
 \item First, the depth of the plane is selected by using the disparity that minimizes \cref{eq:init_energy}. The slope is assumed to be 0 during the fitting process.
 \item Then, by using \emph{Levenberg-Marquardt algorithm}, the planes' slopes are estimated.
 \end{enumerate}
-\paragraph{}
 These output planes represent the new refined depth-map, and are ready to be processed by the next phase of the algorithm.%(or used independently if precision is not that important)
 
 \subsection{Initialization Phase - Algorithm}\label{sec:init_phase_alg}
@@ -248,7 +276,6 @@ For the depth-map recovery problem, the image is expressed as a grid graph (with
 
 In order to work, the \LBP{} algorithm requires some data, specifically, it requires, for each pixel $x$ and disparity value $d$, the cost of assigning to $x$ the disparity $d$: this is expressed as $ 1- u(x)\cdot L_{init}(x,d)$ (see \cref{eq:init_energy_data}). Thus, it is necessary to compute a table able to store such information. 
 The computation of this table is performed by the function \texttt{compute\_energy\_data}, which evaluates $1-u(x)\cdot L(d)$ for each possible pixel $x$ and disparity value $d$. 
-%This table is then used by the \LBP{} algorithm as the vertices labels weights (see \cref{app:LBP}).
 \begin{algorithm}[H]
 	\caption{\texttt{compute\_energy\_data\_init }(camera, $t$, $\hat I$)}
 	\label{alg:energy_data_init}
@@ -279,8 +306,7 @@ The computation of this table is performed by the function \texttt{compute\_ener
 	\State \Return $1 - u\cdot L$
 \end{algorithmic}
 \end{algorithm}
-
-\begin{wrapfigure}{R}{.28\textwidth}
+\begin{figure}[!h]
 	\centering
 	\begin{tabular}{|l  l|}\hline\hline
 		\textbf{variable}&\textbf{shape}\\
@@ -291,14 +317,15 @@ The computation of this table is performed by the function \texttt{compute\_ener
 		$p_c$, $u$&$h\times w$\\\hline\hline
 	\end{tabular}
 	\caption{Shapes of the variables in \cref{alg:energy_data_init} }
-\end{wrapfigure}
+\end{figure}
 
-The procedure \texttt{homogeneous\_coordinate\_grid}(h,w) produces a multi-dimensional array $x^h$ which stores a grid of homogeneous coordinates, such that the first axis represent the coordinate itself, \ie 
+The procedure \texttt{homogeneous\_coordinate\_grid}(h,w) produces a multi-dimensional array $x^h$ which stores a grid of homogeneous coordinates, such that the first axis represent the coordinate itself, \ie
 \begin{align*}
- x^h[0,i,j] &= i\\
- x^h[1,i,j] &= j\\
- x^h[2,i,j] &= 1
+	x^h[0,i,j] &= i\\
+	x^h[1,i,j] &= j\\
+	x^h[2,i,j] &= 1
 \end{align*}
+
 The coordinates assume integer values between $0$ to $h$ (excluded) for the second axis (that is, value $i$ in above equation) and between $0$ and $w$ (excluded) for the third axis (value $j$). Consequently, $x^h$'s shape is $3\times h \times w$.
 
 The procedure \texttt{conjugate\_coordinates}($camera$, $t$, $t'$, $x^h$, $D$) computes, for each coordinate in $x^h$, the respective conjugate coordinate at time $t$ if the depth stored in $D$ is used. The implementation of this procedure is explained in \cref{app:conjugate_pixel}.
@@ -329,21 +356,18 @@ Using this definition, $p_v$ encodes the distance between the coordinates $x$ an
 
 
 \subsection{Bundle Optimization Phase - Algorithm}
-The implementation is similar to the one used for the first step of the initialization phase (\cref{sec:init_phase}), one major difference consists in the computation of the term $p_v$, which is multiplied to $p_c$ in before updating the likelihood $L$.
-%The procedure for computing $p_v$ is described in \cref{alg:pv}.
+The implementation is similar to the one used for the first step of the initialization phase (\cref{sec:init_phase}), the only major difference is in the computation of the term $p_v$, which is multiplied to $p_c$ in before updating the likelihood $L$. By adding the pseudo-code
+\begin{enumerate}
+	%\begin{algorithmic}[0]
+		\item $D^r_{t'} \leftarrow$ \texttt{remap}($D_{t'}$, $x'^h$)
+		\item $l_{t',t}\leftarrow$ \texttt{conjugate\_coordinates}($camera$, $t'$,  $t$, $x'^h$, $D^r_{t'}$)
 
-By adding the pseudo-code
-%\begin{tcolorbox}[colback=white,nobeforeafter]
-	\begin{algorithmic}[0]
-		\State $D^r_{t'} \leftarrow$ \texttt{remap}($D_{t'}$, $x'^h$)
-		\State $l_{t',t}\leftarrow$ \texttt{conjugate\_coordinates}($camera$, $t'$,  $t$, $x'^h$, $D^r_{t'}$)
-
-		\State $p_v \leftarrow \exp\left(-\frac{\lVert x - l_{t',t}\rVert^2}{2\sigma_d^2}\right)$
-	\end{algorithmic}
-%\end{tcolorbox}
+		\item $p_v \leftarrow \exp\left(-\frac{\lVert x - l_{t',t}\rVert^2}{2\sigma_d^2}\right)$
+	%\end{algorithmic}
+\end{enumerate}
 in the inner for loop and by changing how $L$ is updated, it is possible to add the bundle optimization phase  to \cref{alg:energy_data_init}; the use of such optimization is managed by the boolean variable $use\_bundle$.
 Thus, the final algorithm, able to exploit the term $p_v$, is described in \cref{alg:energy_data}. Note that the functions \texttt{homogeneous\_coordinate\_grid}, \texttt{conjugate\_coordinates}, \texttt{remap},  \texttt{L2\_norm}, and  \texttt{max\_reduce\_dim0} work as described in \cref{sec:init_phase_alg}.
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 	\caption{\texttt{compute\_energy\_data }($camera$, $t$, $\hat I$, $\hat D$)}
 	\label{alg:energy_data}
 	\begin{algorithmic}[1]
@@ -414,14 +438,18 @@ Thus, the final algorithm, able to exploit the term $p_v$, is described in \cref
 
 \section{Dependencies Installation}
 %show how to install opencv and various requirements
-The system makes use of several external libraries, fortunately these can be easily installed by using \texttt{pip} and the \texttt{requirements.txt} file:
+The system makes use of several external libraries, which can be easily installed using \texttt{pip} and the \texttt{requirements.txt} file:
 \begin{lstlisting}[stepnumber=0]
 pip install -r requirements.txt
 \end{lstlisting}
+\begin{tcolorbox}[title=Note:]
+\textbf{Python 2.7} is required in order to run the system, consequently, the appropriate version of \textbf{pip} should be used. 
+\end{tcolorbox}
+
 
 \section{Running the System}
 %In order to estimate the depth-map of a 
-The system can be executed by executing the following command from the operating system's command line terminal:
+The system can be executed by invoking the following instruction from the operating system's command line terminal:
 \begin{lstlisting}[stepnumber=0]
 	python estimate.py [-i][-b] <config.txt>
 \end{lstlisting}
@@ -435,43 +463,71 @@ The options \texttt{-i} and \texttt{-b} are used to communicate the system which
 
 
 \subsection{Special Folders and Files}
-Different folders and files are used by the system during depth estimation; these are divided into three types: \emph{configuration files}, \emph{picture-folders}, and finally \emph{depth-folders}.
+Different folders and files are used by the system during depth estimation; these can be divided into three types: \emph{configuration file}, \emph{picture-folder}, and finally \emph{depth-folder}.
 
-\paragraph{Configuration File.} The configuration file is used to set the parameter values to be used while running the system, it contains key-value pairs (with syntax \texttt{<\emph{key}>=<\emph{value}>}).
-Each of these pairs must be interleaved by a newline character to the next one.
+\paragraph{Configuration File.} The configuration file is used to set the parameter values to be used while running the system, it must contain a JSON object with key-value pairs.
 
-These pairs specify the parameters values used in the various algorithms, as well as more practical information, like the directories storing the input image sequence or the output depth-maps. Generally speaking, this file contains all the information necessary for the system in order to work properly. Most of these parameters have default values,so they are not required to be present in the configuration file, that is, with the exception of the first few lines: indeed, the first few lines in the file must set the values for the keys: \texttt{picture\_folder}, containing the input pictures, and \texttt{depth\_folder\_output}, which will store the estimated depth-maps.
+These pairs specify the parameter values used in the various algorithms, as well as more practical information, like the directories storing the input image sequence or the output depth-maps. Generally speaking, this file contains all the information necessary for the system in order to work properly.
+%Most of these parameters have default values,so they are not required to be present in the configuration file, that is, with the exception of the first few lines: indeed, the first few lines in the file must set the values for the keys: \texttt{picture\_folder}, containing the input pictures, and \texttt{depth\_folder\_output}, which will store the estimated depth-maps.
+An example of a configuration file is as follows:
+%\begin{tcolorbox}[title=Example of JSON configuration object:]
+\begin{lstlisting}[stepnumber=0, language=JavaScript]
+
+	{
+		"camera_file" : "camera.txt",
+		"depthmaps_directory" : "depth",
+		"pictures_directory" : "source",
+		"output_directory" : "output",
+		"pictures_file_extension" : ".png",
+		"original_height" : 540,
+		"original_width" : 960,
+		"height" : 270,
+		"width" : 480,
+		"start_frame" : 9,
+		"end_frame" : 30
+	}
+	
+\end{lstlisting}
+%\end{tcolorbox}
 
 %TODO add brief explenation of common parameters, add all parameters in appendix or in params section, give link
 
 \paragraph{Picture Folder.} This folder contains the picture sequence to be used during the estimation process.
-The images must be named using the syntax \texttt{img\_\textit{<num>}}, with \texttt{\textit{<num>}} numeric string which assumes values from \texttt{000} to \texttt{999}. The images filenames must be organized in a contiguous fashion: no gaps should be present between the smallest and the largest filename numbers.
+The images must be named using the syntax \texttt{img\_\textit{<num>}}, with \texttt{\textit{<num>}} numeric string which assumes values from \texttt{0000} to \texttt{9999}. The images filenames must be organized in a contiguous fashion: no gaps should be present between the smallest and largest filename numbers.
 All the image files should have format \texttt{.png} or \texttt{.jpg}, and same resolution.
 
 
-\paragraph{Depth Folder.} This folder contains the output depth-maps, stored as \texttt{.npy} files. This is standard binary format used by \textbf{NumPy} to store a single \textbf{NumPy} array. These files are named \texttt{depth\_\textit{<num>}}, as before,  \texttt{\textit{<num>}} can assume values between \texttt{000} and \texttt{999}; said number indicates the image used to extract the depth-map.
+\paragraph{Depth Folder.} This folder contains the output depth-maps, stored as \texttt{.npy} files. This is standard binary format used by \textbf{NumPy} to store a single \textbf{NumPy} array. These files are named \texttt{depth\_\textit{<num>}}, as before,  \texttt{\textit{<num>}} can assume values between \texttt{0000} and \texttt{9999}; said number indicates the image used to extract the depth-map.
+
+\paragraph{Output Folder}
 
 
 \section{Python Modules}
-A variety of custom modules were created for the project, an exhaustive list is the following:
+The following custom python modules were created for the project:
 \begin{description}
-	\item[\ComputeEnergy:] This module contains all functions necessary for the energy computation of a single frame.
-	\item[\Estimate:] This module is used to estimate the depth-maps for a sequence of images. To do so, it makes use of the module \textbf{compute\_energy}.
-	\item[\Lbp:] It contains an implementation of the \emph{Loopy Belief Propagation} algorithm.
-	\item[\Utils:] This module contains a variety of class that are used by the other python modules, as well as debugging and visualization procedures.
-	\item[\Params:] It contains parameters to be used by the system and the various algorithms.
+	\item[\ComputeEnergy:] This module contains functions necessary for the computation of the data terms in \cref{eq:init_energy} and \cref{eq:init_energy_data} with respect to all the possible disparity labels.
+	\item[\Estimate:] This module is used to estimate the depth-maps for a sequence of images. To do so, it makes use of the module \ComputeEnergy{}.
+	\item[\Lbp:] It contains an implementation of the \emph{Loopy Belief Propagation} algorithm used by the \Estimate{} module during the depth-maps estimation process.
+	\item[\Utils:] This module contains a variety of class used by the other custom python modules, as well as debugging and visualization procedures.
+	\item[\Params:] This module contains parameters used by the system and the various algorithms.
 \end{description}
 
-\subsection{\ComputeEnergy}
-[TODO]
-\subsection{\Estimate}
-[TODO]
-\subsection{\Lbp}
-[TODO]
-\subsection{\Utils}
-[TODO]
-\subsection{\Params}
-[TODO]
+%\subsection{\ComputeEnergy}
+%In this module all the procedure required for the estimation of the $E_{data}$ and $E^t_{data}$ terms in \cref{eq:init_energy} and \cref{eq:init_energy_data} respectively. More precisely, it contains the implementation of \cref{alg:energy_data} and all the subroutines necessary for its correct execution. 
+
+% also the implementation of the smooth energy weights is present here
+
+%{
+%	\newcommand{\EnergyData}{\texttt{compute\_energy_data}}
+%	\newcommand{\ConjugateCoordinates}{\texttt{conujugate\_coordinates}}
+%	\newcommand{\Lnorm}{\texttt{L2\_norm}}
+%	\newcommand{\LambdaFactor}{\texttt{lambda\_factor}}
+%	\newcommand{\HomogeneousCoord}{\texttt{homogeneous\_coord\_grid}}
+%\begin{table}
+	
+%	\caption{Functions present in \ComputeEnergy{} module.}\label{tab:comp_energy}
+%\end{table} 
+%}
 
 
 

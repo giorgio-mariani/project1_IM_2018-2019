@@ -1,5 +1,6 @@
-video\ sequences/**
+data/**
 src/depths/**
 other/opencv/
 other/original_software/
 **.pyc
+**/.vscode/

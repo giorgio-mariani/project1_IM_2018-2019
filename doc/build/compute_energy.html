@@ -1,0 +1,332 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Module compute_energy.py &#8212; IM_Project1_2018-2019 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Module lbp.py" href="lbp.html" />
+    <link rel="prev" title="Module estimate.py" href="estimate.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-compute_energy">
+<span id="module-compute-energy-py"></span><h1>Module <em>compute_energy.py</em><a class="headerlink" href="#module-compute_energy" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<dl class="function">
+<dt id="compute_energy.lambda_factor">
+<code class="descclassname">compute_energy.</code><code class="descname">lambda_factor</code><span class="sig-paren">(</span><em>image</em>, <em>ws=1.0</em>, <em>epsilon=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/compute_energy.html#lambda_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#compute_energy.lambda_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the smoothness weights for the LBP algorithm.</p>
+<p>This functions computes the edge weights that will be used during the
+executiong of the <em>Loopy Belief Propagation</em> algorithm.
+The values are inversely proportional to the difference between 
+adjacent pixels’ colors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>image</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array, type float32</span></dt>
+<dd><p class="first last">Array representing an image (so with shape [<cite>h</cite>, <cite>w</cite>, 3]).</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>list of numpy arrays, type float32</strong></dt>
+<dd><p class="first">Said list contains four smoothness weight arrays with shape 
+[<cite>h</cite>, <cite>w</cite>]; one matrix per neighbor direction. More precisely, 
+if we denote the four matrices as <img class="math" src="_images/math/3649f7998e6ea3c89e2a28e7ece80ca2a46ab7eb.png" alt="M_{up}, M_{down}, M_{left}, M_{right}"/>,
+we have that</p>
+<ul class="last simple">
+<li><img class="math" src="_images/math/bc6ae691a2afdc38286657120097e1eb88c1b2d6.png" alt="M_{up}[y,x] = \lambda((y,x), (y+1, x)),"/></li>
+<li><img class="math" src="_images/math/d39aafe4d22d69035739461fd2b4b91d05131bb0.png" alt="M_{down}[y,x] = \lambda((y,x), (y-1, x)),"/></li>
+<li><img class="math" src="_images/math/de31328888ab8cb499164e9f78fde86bc8e9ab6a.png" alt="M_{left}[y,x] = \lambda((y,x), (y, x+1)),"/></li>
+<li><img class="math" src="_images/math/7c72b6137c0448a86e073d689d0f708a1556c692.png" alt="M_{right}[y,x] = \lambda((y,x), (y, x-1))."/></li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="lbp.html#lbp.lbp" title="lbp.lbp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lbp.lbp</span></code></a></dt>
+<dd><em>Loopy Belief Propagation</em> implementation.</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>the math formula used to compute the lambda factor for an edge <cite>(x,y)</cite>, 
+is given by</p>
+<div class="math">
+<p><img src="_images/math/387290dc67114f8a6338829722a0d2a5699b1fc8.png" alt="\lambda(x,y) = w_s\cdot \frac{u_\lambda(x)}{||I(x) - I(y)|| + \epsilon},"/></p>
+</div><p>with <img class="math" src="_images/math/860c54507ef7b5b2622e24b485e7ae7c1aaf7bf0.png" alt="w_s"/> and <img class="math" src="_images/math/65d19c66c148d5016c6a89d26486bf6d1966ded1.png" alt="\epsilon"/> positive constant values, <img class="math" src="_images/math/59553468fa27e706794087a0c054dcb476b327b2.png" alt="I(x)"/>
+the image’s color at pixel <cite>x</cite>, and <img class="math" src="_images/math/a870d515a92d4259621e08c2faee564b5d851edd.png" alt="u_\lambda(x)"/> is</p>
+<div class="math">
+<p><img src="_images/math/50c4c03f99497dd1c05978b53c7718000d07c18f.png" alt="u_\lambda(x) = {|N(x)|}\big/{\sum_{y'\in N(x)} \frac{1}{||I(x) - I(y')||+\epsilon}}."/></p>
+</div></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="compute_energy.compute_energy_data">
+<code class="descclassname">compute_energy.</code><code class="descname">compute_energy_data</code><span class="sig-paren">(</span><em>frame_index</em>, <em>sequence</em>, <em>window_side=10</em>, <em>sigma_c=1.0</em>, <em>sigma_d=2.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/compute_energy.html#compute_energy_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#compute_energy.compute_energy_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the data cost term, for frame <em>frame_index</em>, to be used 
+for the LBP algorithm.</p>
+<p>This function computes an array with shape <cite>[m, h, w]</cite>, where <cite>m</cite> is 
+the number of depth labels used, <cite>h</cite> and <cite>w</cite> are respectively the 
+pictures’ height and width.
+The value in this array at position <cite>(d, y, x)</cite>, is inversely 
+proportional to the likelihood that pixel <cite>(y,x)</cite> has disparity <cite>d</cite>.
+this value is computed using multi-stereo photo consistency constraints,
+and, if <code class="docutils literal notranslate"><span class="pre">sequence.use_bundle()==True</span></code>, geometric consistency with previously
+estimated depth-maps (<em>bundle optimization</em>).
+The result of this function should be used as <strong>data cost</strong> for the LBP
+algorithm (see <a class="reference internal" href="lbp.html#lbp.lbp" title="lbp.lbp"><code class="xref py py-func docutils literal notranslate"><span class="pre">lbp.lbp()</span></code></a>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>frame_index</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Frame whose depth-map is estimated.</p>
+</dd>
+<dt><strong>sequence</strong> <span class="classifier-delimiter">:</span> <span class="classifier">utils.Sequence</span></dt>
+<dd><p class="first last">Object containing parameters necessary to the depth-maps estimation.
+It contains the camera matrices, picture arrays, length of the
+sequence, etc. If <em>sequence</em> contains also previously estimated 
+depth-maps, then the <em>bundle optimization</em> phase is also executed.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>numpy array, type float32</strong></dt>
+<dd><p class="first last">Array with shape <cite>[m, h, w]</cite>, with <cite>m</cite> the number of possible depth 
+labels, and <cite>h</cite> and <cite>w</cite> height and width of frame <em>frame_index</em>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="lbp.html#lbp.lbp" title="lbp.lbp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lbp.lbp</span></code></a></dt>
+<dd><em>Loopy Belief Propagation</em> implementation.</dd>
+</dl>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="compute_energy.conujugate_coordinates">
+<code class="descclassname">compute_energy.</code><code class="descname">conujugate_coordinates</code><span class="sig-paren">(</span><em>sequence</em>, <em>pose1</em>, <em>pose2</em>, <em>coorsxy</em>, <em>d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/compute_energy.html#conujugate_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#compute_energy.conujugate_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the image pixel coordinates with respect of two different camera poses.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>sequence</strong> <span class="classifier-delimiter">:</span> <span class="classifier">utils.Sequence</span></dt>
+<dd><p class="first last">Sequence object containing the camera parameters.</p>
+</dd>
+<dt><strong>pose1</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Index of the first pose in <em>camera</em></p>
+</dd>
+<dt><strong>pose2</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Index of the second pose in <em>camera</em></p>
+</dd>
+<dt><strong>coorsxy</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array, type float32</span></dt>
+<dd><p class="first last">Homogeneous camera coordinates of shape [3, h, w], the first axis
+represents the coordinate itself.</p>
+</dd>
+<dt><strong>d</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array, type float32</span></dt>
+<dd><p class="first last">Array of shape [h,w] that indicates the disparity to use for a 
+certain pixel while computing the conjugate point.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>numpy array, type float32</strong></dt>
+<dd><p class="first last">Array  with shape [3, h, w] representing the conjugate coordinates.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="compute_energy.L2_norm">
+<code class="descclassname">compute_energy.</code><code class="descname">L2_norm</code><span class="sig-paren">(</span><em>img_a</em>, <em>img_b</em>, <em>keepdims=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/compute_energy.html#L2_norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#compute_energy.L2_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the norm of the per-pixel difference between the two images.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>img_a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array, type float32</span></dt>
+<dd><p class="first last">First image, shape [h, w, 3]</p>
+</dd>
+<dt><strong>img_b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array, type float32</span></dt>
+<dd><p class="first last">Second image, shape [h, w, 3]</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>numpy array</strong></dt>
+<dd><p class="first last">Array representing the norm of the difference between the two images.
+The array has shape [h, w, 1] if <code class="docutils literal notranslate"><span class="pre">keepdims==True</span></code>, [h, w] otherwise.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="compute_energy.homogeneous_coord_grid">
+<code class="descclassname">compute_energy.</code><code class="descname">homogeneous_coord_grid</code><span class="sig-paren">(</span><em>h</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/compute_energy.html#homogeneous_coord_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#compute_energy.homogeneous_coord_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute grid of homogeneous coordinates having three dimensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">height</p>
+</dd>
+<dt><strong>w</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">width</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array, type float32</span></dt>
+<dd><p class="first">Grid of homogeneous coordinates with shape [3, h, w], whose first
+axis indicates the coordinate itself, that is,</p>
+<div class="last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">out[0,</span> <span class="pre">y,</span> <span class="pre">:]</span> <span class="pre">=</span> <span class="pre">y</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">out[1,</span> <span class="pre">:,</span> <span class="pre">x]</span> <span class="pre">=</span> <span class="pre">x</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">out[2,</span> <span class="pre">:,</span> <span class="pre">:]</span> <span class="pre">=</span> <span class="pre">1</span></code></div>
+</div>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">IM_Project1_2018-2019</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick-Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_file.html">Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="estimate.html">Module <em>estimate.py</em></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Module <em>compute_energy.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="lbp.html">Module <em>lbp.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Module <em>utils.py</em></a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="estimate.html" title="previous chapter">Module <em>estimate.py</em></a></li>
+      <li>Next: <a href="lbp.html" title="next chapter">Module <em>lbp.py</em></a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giorgio Mariani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/compute_energy.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

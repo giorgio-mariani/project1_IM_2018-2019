@@ -1,0 +1,647 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>utils &#8212; IM_Project1_2018-2019 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span> 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+
+<span class="c1"># neighbourhood parameters</span>
+<span class="n">UP</span><span class="p">,</span> <span class="n">DOWN</span><span class="p">,</span> <span class="n">LEFT</span><span class="p">,</span> <span class="n">RIGHT</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span>
+<span class="n">DIRECTIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">UP</span><span class="p">,</span> <span class="n">DOWN</span><span class="p">,</span> <span class="n">LEFT</span><span class="p">,</span> <span class="n">RIGHT</span><span class="p">]</span>
+<span class="n">AFFINE_DIR</span> <span class="o">=</span> <span class="p">{</span><span class="n">UP</span><span class="p">:</span>   <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+              <span class="n">DOWN</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+              <span class="n">LEFT</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+              <span class="n">RIGHT</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)}</span>
+
+<span class="c1">#------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Sequence"><a class="viewcode-back" href="../utils.html#utils.Sequence">[docs]</a><span class="k">class</span> <span class="nc">Sequence</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    height : int</span>
+<span class="sd">        height of the camera (important for intrinsic matrix).</span>
+
+<span class="sd">    width : int</span>
+<span class="sd">        width of the camera (important for intrinsic matrix).</span>
+
+<span class="sd">    K : numpy matrix, type float32</span>
+<span class="sd">        Matrix with shape `[3, 3]` representing the *intrinsic matrix* of</span>
+<span class="sd">        the camera.</span>
+
+<span class="sd">    Rs : list of numpy matrix, type float32</span>
+<span class="sd">        List of numpy matrices with shape `[3, 3]` representing the </span>
+<span class="sd">        *rotations* of the camera during the sequence.</span>
+
+<span class="sd">    Ts : list of numpy matrix, type float32</span>
+<span class="sd">        List of numpy matrices with shape `[1, 3]` representing the </span>
+<span class="sd">        *translations* of the camera during the sequence.</span>
+
+<span class="sd">    I : list of numpy arrays, type float32</span>
+<span class="sd">        List of numpy arrays with shape `[h,w,3]`, representing the </span>
+<span class="sd">        images in the sequence. It must be true that `end - start = len(I)`</span>
+
+<span class="sd">    D : list of numpy arrays, optional, type uint16</span>
+<span class="sd">        List of numpy arrays with shape `[h,w]`, containing previously </span>
+<span class="sd">        estimated depth-maps of the sequence. If this parameter is passed</span>
+<span class="sd">        as input then the sequence will use *bundle optimization*.</span>
+<span class="sd">        It must be true that `end - start = len(I)`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    configparams : dict</span>
+<span class="sd">        Configuration parameters. This dictionary contains information about </span>
+<span class="sd">        necessary files directories, as well as the values for various </span>
+<span class="sd">        parameters used by the system.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configparams</span><span class="p">):</span>
+
+        <span class="n">camera_file</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;camera_file&quot;</span><span class="p">]</span>
+        <span class="n">pictures_dir</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;pictures_directory&quot;</span><span class="p">]</span>
+        <span class="n">pictures_ext</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;pictures_file_extension&quot;</span><span class="p">]</span>
+        <span class="n">depthmap_dir</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;depthmaps_directory&quot;</span><span class="p">]</span>
+
+        <span class="n">height</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth_levels</span> <span class="o">=</span> <span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;depth_levels&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;depth_min&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">configparams</span><span class="p">[</span><span class="s2">&quot;depth_max&quot;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end</span>
+
+        <span class="c1"># setup camera parameters-----------------------------------------</span>
+        <span class="n">Ks</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_camera_params</span><span class="p">(</span><span class="n">camera_file</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Rs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">end</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">StandardError</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">Ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Rs</span> <span class="o">=</span> <span class="n">Rs</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span> <span class="o">=</span> <span class="n">Ts</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+
+        <span class="n">orig_width</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
+        <span class="n">orig_height</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
+        
+        <span class="c1"># necessary if target resultion is different from the one used </span>
+        <span class="c1"># to estimate the camera parameters.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">width</span><span class="o">/</span><span class="n">orig_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">height</span><span class="o">/</span><span class="n">orig_height</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">width</span><span class="o">/</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">height</span><span class="o">/</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="c1">#-----------------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_pictures</span><span class="p">(</span><span class="n">pictures_dir</span><span class="p">,</span> <span class="n">pictures_ext</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">depthmap_dir</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_depthmaps</span><span class="p">(</span>
+            <span class="n">depthmap_dir</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_camera_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">frame_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            
+            <span class="k">def</span> <span class="nf">read_vector</span><span class="p">():</span>
+                <span class="n">vec</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vec</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                
+            <span class="k">def</span> <span class="nf">read_matrix</span><span class="p">():</span>
+                <span class="n">r1</span> <span class="o">=</span> <span class="n">read_vector</span><span class="p">()</span>
+                <span class="n">r2</span> <span class="o">=</span> <span class="n">read_vector</span><span class="p">()</span>
+                <span class="n">r3</span> <span class="o">=</span> <span class="n">read_vector</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">([</span><span class="n">r1</span><span class="p">,</span><span class="n">r2</span><span class="p">,</span><span class="n">r3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            
+            <span class="n">K_sequence</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="n">frame_num</span>
+            <span class="n">R_sequence</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="n">frame_num</span>
+            <span class="n">T_sequence</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="n">frame_num</span>
+            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">frame_num</span><span class="p">):</span>
+                <span class="n">K_sequence</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">()</span>
+                <span class="n">R_sequence</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">()</span>
+                <span class="n">T_sequence</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asmatrix</span><span class="p">(</span><span class="n">read_vector</span><span class="p">())</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">K_sequence</span><span class="p">,</span> <span class="n">R_sequence</span><span class="p">,</span> <span class="n">T_sequence</span>
+
+    <span class="k">def</span> <span class="nf">_load_pictures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file_ext</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="n">I</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+            <span class="n">img_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span><span class="s2">&quot;img_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="n">file_ext</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">StandardError</span><span class="p">(</span><span class="s2">&quot;Image &quot;</span><span class="o">+</span><span class="n">img_name</span><span class="o">+</span><span class="s2">&quot; not found in picture sequence directory (&quot;</span><span class="o">+</span><span class="n">directory</span><span class="o">+</span><span class="s2">&quot;)!&quot;</span><span class="p">)</span>
+            <span class="n">I</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">I</span>
+
+    <span class="k">def</span> <span class="nf">_load_depthmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+            <span class="n">depthmap_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="s2">&quot;depth_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.npy&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">depthmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">depthmap_name</span><span class="p">)</span>
+                <span class="n">D</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">depthmap</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">StandardError</span><span class="p">(</span><span class="s2">&quot;Depth-map file &quot;</span><span class="o">+</span><span class="n">depthmap_name</span><span class="o">+</span><span class="s2">&quot; not found in depth sequence directory (&quot;</span><span class="o">+</span><span class="n">directory</span><span class="o">+</span><span class="s2">&quot;)!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># TODO check correct format shape height, width, labels</span>
+        <span class="k">return</span> <span class="n">D</span>
+    <span class="c1">#--------------------------------------------------------------------------</span>
+    
+<div class="viewcode-block" id="Sequence.use_bundle"><a class="viewcode-back" href="../utils.html#utils.Sequence.use_bundle">[docs]</a>    <span class="k">def</span> <span class="nf">use_bundle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return if this sequence can be used for *bundle optimization*,</span>
+<span class="sd">        that is, if it contains previously estimated depth-maps.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether the sequence can be used with *bundle optimization*.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">!=</span> <span class="kc">None</span></div></div>
+
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="parse_configfile"><a class="viewcode-back" href="../utils.html#utils.parse_configfile">[docs]</a><span class="k">def</span> <span class="nf">parse_configfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse a configuration file and return a dictionary containing the</span>
+<span class="sd">    various parameters used by the system.</span>
+
+<span class="sd">    For a more in detail explanation of the parameters contained in the </span>
+<span class="sd">    configuration file, and its format see :ref:`config-file`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str or unicode</span>
+<span class="sd">        Relative or absolute path to the configuration file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Dictionary containing the system parameters. If a parameter-value</span>
+<span class="sd">        pair was not in the configuration file then its value is ``None``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span> 
+
+    <span class="c1"># TODO add correct error messages</span>
+    
+    <span class="n">required_keys</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;camera_file&quot;</span><span class="p">:</span><span class="n">basestring</span><span class="p">,</span>
+        <span class="s2">&quot;pictures_directory&quot;</span><span class="p">:</span><span class="n">basestring</span><span class="p">,</span>
+        <span class="s2">&quot;output_directory&quot;</span><span class="p">:</span><span class="n">basestring</span><span class="p">,</span>
+        <span class="s2">&quot;pictures_file_extension&quot;</span><span class="p">:</span><span class="n">basestring</span><span class="p">,</span>
+        <span class="s2">&quot;height&quot;</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
+        <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
+        <span class="s2">&quot;start_frame&quot;</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
+        <span class="s2">&quot;end_frame&quot;</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
+        <span class="s2">&quot;depth_levels&quot;</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
+        <span class="s2">&quot;depth_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;depth_max&quot;</span><span class="p">:</span><span class="nb">float</span>
+    <span class="p">}</span>
+
+    <span class="n">optional_keys</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;depthmaps_directory&quot;</span><span class="p">:</span><span class="n">basestring</span><span class="p">,</span>
+        <span class="s2">&quot;sigma_c&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;sigma_d&quot;</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;eta&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;w_s&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;epsilon&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;window_side&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">}</span>
+    
+    <span class="c1"># try to parse the file as a json object</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">jobj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">StandardError</span><span class="p">()</span>
+        
+    <span class="c1"># check if jason file contains a json object</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">jobj</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">dict</span> <span class="p">:</span>
+        <span class="k">raise</span> <span class="n">StandardError</span><span class="p">(</span><span class="s2">&quot;Configuration file file should contain a single JSON object!&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># check for correct type</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">required_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">jobj</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">StandardError</span><span class="p">(</span><span class="s2">&quot;parameter &quot;</span><span class="o">+</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot; is not in the configuration file JSON object!&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">required_keys</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="n">StandardError</span><span class="p">(</span><span class="s2">&quot;parameter &quot;</span><span class="o">+</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot; has the wrong value: expected &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">required_keys</span><span class="p">[</span><span class="n">key</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;, received &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">optional_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">jobj</span><span class="p">:</span>
+            <span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">optional_keys</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="n">StandardError</span><span class="p">(</span><span class="s2">&quot;parameter &quot;</span><span class="o">+</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot; has the wrong value: expected &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">optional_keys</span><span class="p">[</span><span class="n">key</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;, received &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># convert relative paths into absolute paths</span>
+    <span class="n">absdirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;camera_file&quot;</span><span class="p">,</span><span class="s2">&quot;depthmaps_directory&quot;</span><span class="p">,</span><span class="s2">&quot;pictures_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;output_directory&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">absdirname</span><span class="p">,</span><span class="n">jobj</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">jobj</span></div>
+
+<span class="c1">###############################################################################</span>
+
+<span class="k">def</span> <span class="nf">show_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">secs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">close_after</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">UMat</span><span class="p">(</span><span class="n">img</span><span class="p">))</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="n">secs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">close_after</span><span class="p">:</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">show_depthmap</span><span class="p">(</span><span class="n">depth_map</span><span class="p">,</span> <span class="n">secs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">close_after</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">depth_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">depth_map</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">depth_map</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">depth_map</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">((</span><span class="n">depth_map</span><span class="o">-</span><span class="n">m</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">-</span><span class="n">m</span><span class="p">)</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+    <span class="n">show_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">secs</span><span class="p">,</span> <span class="n">close_after</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">load_image_depth</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">struct</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">read_float</span><span class="p">():</span>
+            <span class="n">bs</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bs</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span> 
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">bs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">disp</span> <span class="o">=</span> <span class="n">read_float</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">disp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">I</span><span class="p">[</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">disp</span>
+            
+            <span class="n">w</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">width</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">h</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">w</span><span class="o">==</span><span class="mi">0</span> <span class="k">else</span> <span class="n">h</span> 
+            <span class="n">disp</span> <span class="o">=</span> <span class="n">read_float</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">I</span>
+
+<span class="c1">###############################################################################</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">#------------------------------------------------------------------------------</span>
+<span class="sd">class Camera():</span>
+<span class="sd">    &quot;&quot;&quot;Used to maintain camera sequence information such as *rotations*, </span>
+<span class="sd">    *translations* and *intrinsic parameters*.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    height: int</span>
+<span class="sd">        height of the camera (important for intrinsic matrix).</span>
+
+<span class="sd">    width: int</span>
+<span class="sd">        width of the camera (important for intrinsic matrix).</span>
+
+<span class="sd">    K: numpy matrix, type float32</span>
+<span class="sd">        Matrix with shape `[3, 3]` representing the *intrinsic matrix* of</span>
+<span class="sd">        the camera.</span>
+
+<span class="sd">    Rs: list of numpy matrix, type float32</span>
+<span class="sd">        List of numpy matrices with shape `[3, 3]` representing the </span>
+<span class="sd">        *rotations* of the camera during the sequence.</span>
+
+<span class="sd">    Ts: list of numpy matrix, type float32</span>
+<span class="sd">        List of numpy matrices with shape `[3, 3]` representing the </span>
+<span class="sd">        *translations* of the camera during the sequence.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    configparams: dict</span>
+<span class="sd">        Configuration parameters. It should contain the camera file location.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="sd">    def __init__(self, configparams):</span>
+
+<span class="sd">        filename = configparams[&quot;camera_file&quot;]</span>
+<span class="sd">        height = configparams[&quot;height&quot;]</span>
+<span class="sd">        width = configparams[&quot;width&quot;]</span>
+
+<span class="sd">        self.height = height</span>
+<span class="sd">        self.width = width</span>
+<span class="sd">        Ks, Rs, Ts = self._get_camera_matrices(filename)</span>
+<span class="sd">        </span>
+<span class="sd">        self.K = Ks[0]</span>
+<span class="sd">        self.Rs = Rs</span>
+<span class="sd">        self.Ts = Ts</span>
+<span class="sd">        </span>
+<span class="sd">        o_w = (self.K[0,2]+0.5)*2</span>
+<span class="sd">        o_h = (self.K[1,2]+0.5)*2</span>
+
+<span class="sd">        # necessary if target resultion is different from the one used </span>
+<span class="sd">        # to estimate the camera parameters.</span>
+<span class="sd">        self.K[0, 0] = self.K[0,0]*width/o_w</span>
+<span class="sd">        self.K[1, 1] = self.K[1,1]*height/o_h</span>
+<span class="sd">        </span>
+<span class="sd">        self.K[0, 2] = width/2.0 + 0.5</span>
+<span class="sd">        self.K[1, 2] = height/2.0 + 0.5</span>
+
+<span class="sd">    def _get_camera_matrices(self, filename):</span>
+<span class="sd">        with open(filename,&#39;r&#39;) as f:</span>
+<span class="sd">            frame_num = int(f.readline())</span>
+<span class="sd">            f.readline()</span>
+<span class="sd">            </span>
+<span class="sd">            def read_vector():</span>
+<span class="sd">                vec = f.readline().split()</span>
+<span class="sd">                return np.array([float(x) for x in vec], dtype=np.float32)</span>
+<span class="sd">                </span>
+<span class="sd">            def read_matrix():</span>
+<span class="sd">                r1 = read_vector()</span>
+<span class="sd">                r2 = read_vector()</span>
+<span class="sd">                r3 = read_vector()</span>
+<span class="sd">                return np.matrix([r1,r2,r3], dtype=np.float32)</span>
+<span class="sd">            </span>
+<span class="sd">            K_sequence = [None]*frame_num</span>
+<span class="sd">            R_sequence = [None]*frame_num</span>
+<span class="sd">            T_sequence = [None]*frame_num</span>
+<span class="sd">            </span>
+<span class="sd">            for i in range(frame_num):</span>
+<span class="sd">                K_sequence[i] = read_matrix()</span>
+<span class="sd">                R_sequence[i] = read_matrix()</span>
+<span class="sd">                T_sequence[i] = np.asmatrix(read_vector())</span>
+<span class="sd">                f.readline()</span>
+<span class="sd">                f.readline()</span>
+<span class="sd">        return K_sequence, R_sequence, T_sequence</span>
+
+<span class="sd">#------------------------------------------------------------------------------</span>
+<span class="sd">class PictureSequence():</span>
+
+<span class="sd">    def __init__(self, configparams):</span>
+<span class="sd">        directory = configparams[&quot;pictures_directory&quot;]</span>
+<span class="sd">        file_extension = configparams[&quot;pictures_file_extension&quot;]</span>
+<span class="sd">        height = configparams[&quot;height&quot;]</span>
+<span class="sd">        width = configparams[&quot;width&quot;]</span>
+<span class="sd">        start = configparams[&quot;start_frame&quot;]</span>
+<span class="sd">        end = configparams[&quot;end_frame&quot;]</span>
+
+<span class="sd">        self._imgfiles = _get_directory_files(directory, file_extension)</span>
+<span class="sd">        self.height = height</span>
+<span class="sd">        self.width = width</span>
+<span class="sd">        self.start = start</span>
+<span class="sd">        self.end = end</span>
+<span class="sd">        </span>
+<span class="sd">        if len(self._imgfiles) == 0:</span>
+<span class="sd">            raise StandardError(&quot;The picture sequence directory is empty!&quot;)</span>
+<span class="sd">            </span>
+<span class="sd">        if start &lt; 0 or start &gt;= len(self._imgfiles):</span>
+<span class="sd">            raise StandardError(&quot;Invalid start frame for picture sequence! it must be greater than or equal to 0 and less than &quot;+str(len(self._imgfiles)))</span>
+<span class="sd">        </span>
+<span class="sd">        if end &lt; start or end &gt; len(self._imgfiles):</span>
+<span class="sd">            raise StandardError(&quot;Invalid end frame for picture sequence! it must be greater than the start fram and less than or equal to &quot;+str(len(self._imgfiles)))</span>
+
+
+<span class="sd">    def __getitem__(self, index):</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        img = cv2.imread(self._imgfiles[index])</span>
+<span class="sd">        img = cv2.resize(img, (self.width,self.height))</span>
+<span class="sd">        return img</span>
+
+<span class="sd">#------------------------------------------------------------------------------</span>
+<span class="sd">class DepthSequence():</span>
+<span class="sd">    &quot;&quot;&quot;Represent a sequence of depth-maps.</span>
+
+<span class="sd">    An instance of this class represents a sequence of depth-maps; more</span>
+<span class="sd">    precisely, it is used as an interface to access depth-maps stored in a </span>
+<span class="sd">    given directory. The used directory is indicated in the configuration </span>
+<span class="sd">    file.</span>
+<span class="sd">    The method :meth:`DepthSequence.__get__`(`i`) allows to retrieve the</span>
+<span class="sd">    depth-map with name *depth_`i`* (`i` must be between 0000 and 9999).</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    height: int</span>
+<span class="sd">        Height of the depth-maps in the sequence.</span>
+
+<span class="sd">    width: int</span>
+<span class="sd">        Height of the depth-maps in the sequence.</span>
+
+<span class="sd">    start: int</span>
+<span class="sd">        Start index of the sequence. All the depth-maps in the depth </span>
+<span class="sd">        directory. included between *start* and *end*-1 are part of </span>
+<span class="sd">        the depth-map sequence indicated by an instance of this class.</span>
+
+<span class="sd">    end : int</span>
+<span class="sd">        End index of the sequence w.r.t. all the depth-maps in the </span>
+<span class="sd">        depth directory. The index is not included in the sequence;</span>
+<span class="sd">        that is, the last included index is `end - 1`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    configparams: dict</span>
+<span class="sd">        Configuration parameters. It should contain the picture sequence </span>
+<span class="sd">        directory location and other necessary information.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="sd">    def __init__(self, configparams):</span>
+<span class="sd">        </span>
+<span class="sd">        assert type(configparams) == dict</span>
+<span class="sd">        </span>
+<span class="sd">        # get necessary parameters from config file</span>
+<span class="sd">        directory = configparams[&quot;depthmaps_directory&quot;]</span>
+<span class="sd">        height = configparams[&quot;height&quot;]</span>
+<span class="sd">        width = configparams[&quot;width&quot;]</span>
+<span class="sd">        start = configparams[&quot;start_frame&quot;]</span>
+<span class="sd">        end = configparams[&quot;end_frame&quot;]</span>
+<span class="sd">        </span>
+<span class="sd">        self._depthfiles = _get_directory_files(directory, &quot;.npy&quot;)</span>
+<span class="sd">        self.height = height</span>
+<span class="sd">        self.width = width</span>
+<span class="sd">        self.start = start</span>
+<span class="sd">        self.end = end</span>
+<span class="sd">        </span>
+<span class="sd">        if len(self._depthfiles) == 0:</span>
+<span class="sd">            raise StandardError(&quot;The depthmap sequence directory is empty!&quot;)</span>
+
+<span class="sd">        if start &lt; 0 or start &gt;= len(self._depthfiles):</span>
+<span class="sd">            raise StandardError(&quot;Invalid start frame for depthmap sequence! it must be greater than or equal to 0 and less than &quot;+str(len(self._depthfiles)))</span>
+<span class="sd">        </span>
+<span class="sd">        if end &lt; start or end &gt; len(self._depthfiles):</span>
+<span class="sd">            raise StandardError(&quot;Invalid end frame for depthmap sequence! it must be greater than the start frame and less than or equal to &quot;+str(len(self._depthfiles)))</span>
+
+<span class="sd">    def __getitem__(self, index):</span>
+<span class="sd">        &quot;&quot;&quot;Retrieve depth-map at position *index*.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        depthmap = np.load(self._depthfiles[index])</span>
+<span class="sd">        </span>
+<span class="sd">        assert depthmap.shape == (self.height, self.width)</span>
+<span class="sd">        assert depthmap.dtype == np.uint16</span>
+<span class="sd">        return depthmap</span>
+
+
+<span class="sd">def _get_directory_files(directory_name, file_extension):</span>
+<span class="sd">    sequence_files = []</span>
+<span class="sd">    # TODO check if directory exists, if not raise standard error</span>
+
+<span class="sd">    for f in os.listdir(directory_name):</span>
+<span class="sd">        full_name = os.path.join(directory_name, f)</span>
+<span class="sd">        if os.path.isfile(full_name):</span>
+<span class="sd">            _, extension = os.path.splitext(full_name)</span>
+<span class="sd">            if file_extension == extension:</span>
+<span class="sd">                sequence_files.append(full_name)</span>
+<span class="sd">    return sequence_files</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">def test_projection():</span>
+<span class="sd">    import compute_energy as ce</span>
+<span class="sd">    </span>
+<span class="sd">    sequence = Sequence(&#39;../video sequences/Lawn/src/&#39;, &#39;.jpg&#39;)</span>
+<span class="sd">    camera = Camera(&#39;../video sequences/Lawn/cameras.txt&#39;, </span>
+<span class="sd">                          height=sequence.height, </span>
+<span class="sd">                          width=sequence.width)</span>
+<span class="sd">    </span>
+<span class="sd">    h, w = sequence.height, sequence.width</span>
+<span class="sd">    </span>
+<span class="sd">    [X, Y] = np.meshgrid(</span>
+<span class="sd">                np.arange(w, dtype=np.float32),</span>
+<span class="sd">                np.arange(h, dtype=np.float32),</span>
+<span class="sd">                indexing=&#39;xy&#39;)</span>
+<span class="sd">    </span>
+<span class="sd">    X, Y, Z = (np.expand_dims(X,axis=0), </span>
+<span class="sd">               np.expand_dims(Y,axis=0), </span>
+<span class="sd">               np.ones([1, h, w], np.float32))</span>
+<span class="sd">    </span>
+<span class="sd">    coorsxy = np.concatenate([X, Y, Z], axis=0)</span>
+<span class="sd">    coorsxy = np.reshape(coorsxy, [3,-1])</span>
+<span class="sd">    </span>
+<span class="sd">    i=40</span>
+<span class="sd">    filename = &#39;../video sequences/Lawn/depth/_depth&#39;+str(0)+&#39;.raw&#39;</span>
+<span class="sd">    depth = np.reshape(load_image_depth(filename, w, h), [1,h*w])</span>
+<span class="sd">    print depth.max(), depth.min()</span>
+<span class="sd">    remap = ce.compute_candidates(</span>
+<span class="sd">            camera,</span>
+<span class="sd">            0,</span>
+<span class="sd">            i,</span>
+<span class="sd">            coorsxy, </span>
+<span class="sd">            depth)</span>
+<span class="sd">    </span>
+<span class="sd">    # compute norm of difference</span>
+<span class="sd">    img_i_projected = cv2.remap(sequence[i], remap, None, cv2.INTER_NEAREST, borderValue=[128,128,128])</span>
+<span class="sd">    img = cv2.resize(img_i_projected,(w*2,h*2))</span>
+<span class="sd">    show_image(img)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">IM_Project1_2018-2019</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick-Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config_file.html">Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../estimate.html">Module <em>estimate.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../compute_energy.html">Module <em>compute_energy.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lbp.html">Module <em>lbp.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">Module <em>utils.py</em></a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giorgio Mariani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
