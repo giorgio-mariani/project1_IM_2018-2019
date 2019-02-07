@@ -1,0 +1,270 @@
+%%%----------------------------------------------------------
+\chapter{Project Details and Implementation}
+%%%----------------------------------------------------------
+\newcommand{\LongComment}[2]{\Comment{\parbox[t]{#1\linewidth}{#2}}}
+%TODO say that broadcasting rules are used in algorithms
+As already introduced, this project is a partial implementation of the article described in \cite{Zhang2009}. In this chapter it will be explained more in detail \emph{what} and \emph{how} was everything implemented.
+%, starting from the architecture used by the system, to the pseudo-code of the implemented algorithms.
+The decision to not do a complete implementation of the system was adopted due to the following reasons:
+\begin{itemize}
+\item Reduced time on the author's part, which rendered the completion of some section of the paper not plausible. 
+\item Inexperience in some field of study necessary to the implementation of some part of the system, namely \emph{Conjugate Gradient Method} in the space-time fusion phase  (\cref{sec:spacetime_fusion}).
+\item Difficult compatibility of used technology for some of the faced problems, \ie{} mean shift segmentation (\cref{sec:color_segmentation}) using the python's \OpenCV{} binding was more  burdensome to implement than expected.
+\end{itemize}
+
+
+\section{The Architecture}
+The systems is written using the \emph{Python Programming Language}; the reason behind this decision is the relative good performance that vectorized computation libraries can achieve on python, the flexibility and simplicity of the language, and the author's past experience with python libraries such as \textbf{NumPy} and \textbf{TensorFlow}, which makes the development less laborious.
+%TODO say python version
+
+\subsection{Dependencies and Third Party Libraries}
+\paragraph{NumPy:} The main library used for computations in the project is the \textbf{NumPy} module: it is a set of function designed for intensive computing in vectorized fashion, similarly to the \textbf{MATLAB} programming language.
+
+\paragraph{OpenCV:}
+The \textbf{OpenCV} library (version 4.0.0) is also utilized in the project, using the official python bindings.
+\textbf{OpenCV} offers real-time computer vision by exploiting (whenever possible) accelerated hardware, such as GPUs.
+Unfortunately, the official bindings are available only for python 2.7.\textit{x} interpreters, forcing the author to use a compatible interpreter.
+
+
+\section{Implementation}
+In this section the various algorithms employed by the system and  implemented for the project are explained through the use of pseudo-code. To get a more in-depth look at how the system works, the reader should refer to the project's \Github{} repository at \ProjectUrl.
+
+\subsection{Implemented Components}\label{sec:implemented components}
+The parts of the system described in \cite{Zhang2009} that were de-facto implemented are the following:
+\begin{itemize}
+	\item Disparity Initialization (\cref{sec:init_phase}) without the color segmentation/disparity plane fitting component, \ie{} only the \LBP{} optimization part is used for initializing the disparity-maps.
+	\item Bundle Optimization (\cref{sec:bundle_phase}), which was entirely implemented.
+\end{itemize}
+In other words, the omitted parts are both the second step of the initialization phase and the space-time fusion of the bundle results.
+
+Furthermore, the camera parameters are assumed known; this should not be a restricting assumption since there is rich literature in terms of camera calibration and parameters estimation, and a variety of algorithms, such as the one described in \cite{Zhang2007}, can be employed in order to solve this known problem.
+
+\subsection{Notation}
+In this section, some guidelines on how to read the pseudo-code are defined:
+%For example, different fonts are used depending on the nature of the represented variable.
+\begin{itemize}
+	\item Matrices and vectors are noted using bold serif font: $\mat M$,  $\vec x$, e.t.c.
+	\item Sequences of objects are noted using calligraphic font:  $\mathcal{I}$, $\mathcal{D}$, e.t.c.
+	\item The notation $3\times 4 \times 5$ indicates the shape of array with three elements in the first dimension, four in the second one, and five in the last one.
+	\item Functions of type \texttt{reduce\_\textit{func}(\textit{array},\textit{axis})} apply the reduce function \texttt{\textit{func}} ($\min$ for example) over the dimension at position \texttt{\textit{axis}}.
+	\item Functions of type \texttt{elementwise\_\textit{func}(\texttt{\textit{array}})} apply the function \texttt{\textit{func}} to each element in \texttt{\textit{array}}.
+	\item The function \texttt{reshape(\textit{array}, \textit{shape})} reshapes \texttt{\textit{array}} to the shape \texttt{\textit{shape}}.
+\end{itemize}
+
+
+\subsection{Loopy Belief Propagation}
+As already mentioned, \LBP{} is an optimization technique that can be used in order to approximate minimal graph labelings. For a more in-depth description of the algorithm see \cref{app:LBP}. In this section, the pseudo-code of the implementation used in this project is shown. It should be mentioned that the given code (for simplicity sake) does only partially  reflect the actual implementation, since some optimizations and complications (like the smoothness factor $\lambda(\cdot,\cdot)$ and the Multiscale variant of \LBP{}) are not present.\\
+\begin{Note}
+	In order to understand this section, the reader is strongly suggested to  first read \cref{app:LBP}.
+\end{Note}
+
+\begin{algorithm}[H]
+\caption{Loopy Belief Propagation}\label{alg:lbp}
+\begin{algorithmic}[1]
+\Require{$\mat D$ has shape $h\times w \times k$.}\Comment{Data Cost}
+\Require{$s>0$ and $\eta\ge0$.}
+\Statex
+\Procedure{LBP}{$\mat D$, $s$, $\eta$}
+\State Create $\mat{m_\mathit{x}}$ with shape $h\times w\times k$ (init. to zero). \Comment{$\forall \mat{\mathit x}\in\{\mat{up},\mat{down}, \mat{left}, \mat{right}\}$}
+\Statex
+\For{${t}\leftarrow 0,\dots, T$}
+	\State $\mat{h_{tot}} \leftarrow \mat D + \mat{m_{up}} +\mat{m_{down}} + \mat{m_{left}} + \mat{m_{right}}$
+	\State $\mat{h_{up}} \leftarrow \texttt{moveDown}(\mat{h_{tot}}-\mat {m_{down}})$\label{ist:h_start}\Comment{Start computing $h(f)$}
+	\State $\mat{h_{down}} \leftarrow \texttt{moveUp}(\mat{h_{tot}}-\mat {m_{up}})$
+	\State $\mat{h_{left}} \leftarrow \texttt{moveRight}(\mat{h_{tot}}-\mat {m_{right}})$
+	\State $\mat{h_{right}} \leftarrow \texttt{moveLeft}(\mat{h_{tot}}-\mat {m_{left}})$\label{ist:h_end}\Comment{Finish computing $h(f)$}
+	\Statex
+	\For { $\mat x \in \{\mat{up}, \mat{down}, \mat{left}, \mat{right}\}$}		\label{ist:start_thing}\Comment{Start computing $m(f)$}
+		\State $\mat {m_x} \leftarrow \mat{h_x}$
+		\For{ $i=0,\dots,k$}
+		\State $\mat{m_x} \leftarrow \min\left( \mat{m_x}[:, :, i], \mat{m_x}[:, :, i-1] + s\right)$
+		\EndFor
+		\For{ $i=k,\dots,0$}
+				\State $\mat{m_x} \leftarrow \min\left( \mat{m_x}[:, :, i], \mat{m_x}[:, :, i+1] +  s\right)$\Comment{Finish computing $m(f)$}
+		\EndFor 
+	\EndFor
+	\Statex
+	\For { $\mat x \in \{\mat{up}, \mat{down}, \mat{left}, \mat{right}\}$}
+		\State $\mat{tmp}\leftarrow$\texttt{reduce\_min}($\mat{h_x}$, \textit{last-axis})$+\eta$ \Comment{$\mat{tmp}$ has shape $h\times w$}
+		\State $\mat{m_x} \leftarrow \texttt{elmentwise\_min}\left(\mat{m_x}, \mat{tmp}\right)$
+		\label{ist:end_thing}
+		\LongComment{.32}{$\mat{tmp}$ is broadcast to shape $h\times w \times k$}
+	\EndFor
+\EndFor
+\Statex
+\State $\mat B \leftarrow$ Copy of $\mat D$ 
+\For {$\mat x \in \{\mat{up}, \mat{down}, \mat{left}, \mat{right}\}$} \Comment{Compute belief vector}\label{istr:belief_comp1}
+	\State $\mat B \leftarrow \mat B+\mat{m_x}$\label{istr:belief_comp2}
+\EndFor
+\State \Return \texttt{reduce\_argmin}($\mat B$, \textit{last-axis})\Comment{output labels, shape: $h\times w$}
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+The \LBP's pseudo-code can be observed in \cref{alg:lbp}. 
+The input parameter $\mat D$ represents the \emph{data cost} term in \cref{eq:lbp:energy}, while the values $s$, $\eta$ represent the homonymous constants in \cref{eq:lbp:discontinuity}. $\mat D$ is a multi-dimensional array having shape $h\times w \times k$, with  $k$ the number of utilized labels. The value $v$ at position $\mat D[x,y,f]$ indicates the data cost for label $f$ at pixel $(x,y)$.\\
+
+\begin{FunctionBlock}
+	The class of functions \texttt{move\textit{Direction}($\mat M$)} move (by one position) all elements in the input matrix with respect to the direction expressed by \texttt{\textit{Direction}}. In practical terms, an affine transformation is applied over $\mat M$.
+\end{FunctionBlock}
+
+The sent messages $m^t_{(\vec p,\vec q)}$ are implemented through the matrices $\mat{m_{up}}$,  $\mat{m_{down}}$, $\mat {m_{left}}$, and $\mat{m_{right}}$. Each of these has shape $h\times w \times k$ and represents $m^t_{(\vec p,\vec q)}$ with respect to edges in one of the possible four directions. For example,
+$$\mat{m_{up}}[y,x] = m^t_{\left((x,y+1), (x,y)\right)}.$$
+
+%The computation of $h(f)$ is performed in l
+The code between \cref{ist:start_thing} and \cref{ist:end_thing} implements the \cref{eq:lbp:update2}, while computation of the \emph{belief vectors} is done at lines \ref{istr:belief_comp1} and \ref{istr:belief_comp2} by summing $\mat{m_{up}}$,  $\mat{m_{down}}$, $\mat {m_{left}}$, and $\mat{m_{right}}$ to $\mat D$.
+ Finally, the output disparity-labels are calculated in the last line of the procedure by extracting from $\mat B$'s last dimension (which contains label indeces) the labels having minimal weights.
+
+\subsection{Disparity Initialization}\label{sec:init_phase_alg}
+In order to minimize the energy function described in \cref{eq:init_energy}, the \LBP{} algorithm (see above) is used.
+For the disparity-map recovery problem, the disparity-map is expressed as a grid graph (with each node representing a pixel and having at most four adjacent nodes), and the possible labels are the disparity values $d_0,\dots,d_{m-1}$. Therefore, an assignment of these labels over the graph's nodes is a possible disparity-map.
+
+In order to work, the \LBP{} algorithm requires as input the \emph{data cost}, \ie{} the cost of assigning a disparity value to a pixel $\vec x =(x,y)$, for all pixels.
+This cost is  specified by \cref{eq:init_energy_data}, particularly for every pixel $\vec x$ and disparity label $d$, the value 
+$$1 - u(\vec x)\cdot L_{init}(\vec x, d)$$ should be computed. The value $u(\vec x)\cdot L_{init}$ is essentially the likeliness (normalized through $u(\vec x)$) of a pixel to have disparity $d$. 
+
+Computation of the disparity data cost is done through \cref{alg:energy_data_init}.
+The algorithm takes as input a frame $t$, the camera parameters (denoted by $\mat K$, $\mathcal R$, and $\mathcal T$), and the image sequence $\mathcal{I}$ and outputs a multi-dimensional array with shape $h\times w \times m$ representing the data cost for the disparity-map estimation problem.
+
+Procedure \texttt{conjugate\_coor}, described in \cref{alg:conjugate_coor}, computes for each homogeneous coordinate in the array $\mat x^h$, the respective conjugate point w.r.t. the given camera parameters and depth values. This procedure is a vectorized implementation of the formula in \cref{app:conjugate_pixel}.
+
+\begin{algorithm}
+	\caption{\texttt{compute\_energy\_data\_init}}
+	\label{alg:energy_data_init}
+               
+	\begin{algorithmic}[1]
+		\Require $\mat K$ to be the camera intrinsic matrix
+		\Require $\mathcal{R}$ to be a sequence of camera rotation matrices
+		\Require $\mathcal{T}$ to be a sequence of camera translation vectors
+		\Require $\mathcal{I}$ to be a sequence of images
+		\Statex
+		\Procedure{compute\_energy\_data\_init}{$t$, $\mat K$, $\mathcal{R}$, $\mathcal{T}$, $\mathcal{I}$}		
+
+		\State $\mat {I_t}$, $\mat {R_t}$, $\mat {T_t} \leftarrow \mathcal{I}[ t ]$, $\mathcal{R}[t]$, $\mathcal{T}[t]$\Comment{get image and camera param. for frame $t$}
+		\State $\vec x^h \leftarrow$ \texttt{homogeneous\_coor\_grid}($h$,$w$)\Comment{create a grid of hom. indices}
+		\State Create table $\mat L$ with $h \times w\times m$ elements (init. to zero).
+		%\State L $\leftarrow$ $m\times h \times w$ table, initialized with zero
+		\Statex
+		\For {$t'\leftarrow 0\dots n$}
+		\State $\mat{I_{t'}}$, $\mat {R_{t'}}$, $\mat {T_{t'}} \leftarrow \mathcal{I}[ t' ]$,  $\mathcal{R}[t']$, $\mathcal{T}[t']$\Comment{get image and camera param. for frame $t'$}
+		\Statex
+		\For {${label} \leftarrow 0\dots m$}
+		\State Create matrix $\mat D$ with $h \times w$ elements, initialized with value $d_{label}$
+		%\State $\mathrm{d}[i,j] \leftarrow \mathrm{depth\_values}[level]$, $\forall i,\forall j$
+		\State $\vec{x'}^h\leftarrow$ \texttt{conjugate\_coor}($\vec x^h$, $\mat K$, $\mat{R_{t}}$, $\mat{R_{t'}}$,  $\mat{ T_{t}}$, $\mat{ T_{t'}}$, $\mat D$)
+		\State $\mat{I^r_{t'}} \leftarrow$ \texttt{remap}($\mat{I_{t'}}$, $\vec{x'}^h$)
+		\State $p_c \leftarrow$  $\sigma_c$ / $(\sigma_c +$ \texttt{reduce\_norm($\mat{I_t} - \mat{I^r_{t'}}$)})
+		\State $\mat L[:,:,label] \leftarrow \mat L[:,:label] + p_c$\Comment{likeliness for label $label$}
+		\EndFor
+		\EndFor
+		\Statex
+		\State $\mat u \leftarrow$ $1$/ \texttt{reduce\_max}($\mat L$, \textit{last-axis})\Comment{normalization factor w.r.t. to label axis}
+		\State \Return $1 - \mat u\cdot \mat L$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+%\begin{figure}[!h]
+%	\centering
+%	\begin{tabular}{|l  l|}\hline\hline
+%		\textbf{variable}&\textbf{shape}\\
+%		$x^h$, $x'^h$&  $3\times h\times w$\\
+%		$D$ & $h\times w$\\
+%		$I_t$, $I_{t'}$, $I^p_{t'}$&$h\times w$\\
+%		$L$&$m\times h \times w$\\
+%		$p_c$, $u$&$h\times w$\\\hline\hline
+%	\end{tabular}
+%	\caption{Shapes of the variables in \cref{alg:energy_data_init} }
+%\end{figure}
+\begin{algorithm}
+	\caption{\texttt{conjugate\_coor}}
+	\label{alg:conjugate_coor}
+	
+	\begin{algorithmic}[1]
+		\Procedure{conjugate\_coor}{$\vec x^h$, $\mat K$, $\mat{R_{1}}$, $\mat{R_{2}}$,  $\mat{ T_{1}}$, $\mat{ T_{2}}$, $\mat D$}	
+		\State \texttt{reshape}($\mat{x}^h$, $3\times (h\cdot w)$) \Comment{reshape for matrix mul.}
+		\State \texttt{reshape}($\mat{D}$, $1\times(h\cdot w)$)\Comment{reshape for matrix mul.}
+		\State $\mat {x'}^h \leftarrow \mat K\Transpose{\mat{R_2}}\cdot\left(
+			\mat{R_1}\Inverse{\mat K}\vec x^h + 
+			\Transpose{(\mat{T_1}-\mat{T_2})} \cdot \mat D
+		\right)$
+		\State \texttt{reshape}($\mat{x'}^h$, $3\times h\times w$) \Comment{go back to normal shape}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{FunctionBlock}
+The procedure \texttt{homogeneous\_coordinate\_grid($h$, $w$)} produces a multi-dimensional array $\vec x^h$ filled with a grid of homogeneous coordinates, such that the first axis represent the coordinate itself, \ie
+\begin{align*}
+\vec x^h[0,i,j] &= i\\
+\vec x^h[1,i,j] &= j\\
+\vec x^h[2,i,j] &= 1
+\end{align*}
+The coordinates assume integer values between $0$ to $h$ (excluded) for the second axis (that is, value $i$ in above equation) and between $0$ and $w$ (excluded) for the third axis (value $j$). Consequently, $\vec x^h$'s shape is $3\times h \times w$.
+\end{FunctionBlock}
+
+\begin{FunctionBlock}
+The procedure \texttt{remap($\vec I$, $\mat{map}$)} is used to transform the input image $\vec I$ using a certain mapping $\mat{map}$ such that the output image $\vec{I'}$ is defined as  
+$$\vec{I'}[\vec x] = \vec I[\mat{map}[\vec x]].$$
+%The reader should note that in \cref{alg:energy_data_init} there is an abuse of notation, since the variable $\vec{x'}^h$ (which assumes role of the argument $\mat{map}$ in the function call) has shape $3\times h \times w$ instead of the required $h\times w \times 2$; however, this can be easily solved by transforming $x'^h$ to the non-homogeneous coordinates $x'$ and then transposing it. 
+\end{FunctionBlock}
+
+\subsection{Bundle Optimization}
+As with Disparity Initialization, Bundle Optimization makes also use of \LBP{} in order to estimate the disparity-maps. 
+As a result, the algorithm used for Bundle Optimization is similar to the one used to compute the data cost during the disparity initialization (see \cref{alg:energy_data_init}), the only major difference is the requirement to compute the term $p_v$, found in \cref{eq:pv}. This term is indeed used in order to define the Bundle Optimization likelihood (function $L$ in \cref{eq:bundle_energy_data})
+%for the first step of the initialization phase (\cref{sec:init_phase}), the only major difference is in the computation of the term $p_v$, which is multiplied to $p_c$ before updating the likelihood $L$. 
+By adding the pseudo-code at \cref{alg:compute_pv} in the inner for loop and by changing how the array $\mat L$ is updated, it is possible to expand \cref{alg:energy_data_init} with Bundle Optimization.
+The use of such component is managed by the boolean variable $use\_bundle$.
+Thus, the final algorithm, able to exploit the term geometric coherence constraint $p_v$, is described in \cref{alg:energy_data}. 
+%Note that the functions \texttt{homogeneous\_coordinate\_grid}, \texttt{conjugate\_coor}, \texttt{remap},  \texttt{norm}, and  \texttt{reduce\_max} work as described in \cref{sec:init_phase_alg}.
+\begin{algorithm}[H]
+	\caption{\texttt{compute\_pv}}
+	\label{alg:compute_pv}
+	\begin{algorithmic}[1]
+		\Procedure{conjugate\_coor}{$\vec {x'}^h$, $\mat K$, $\mat{R_{1}}$, $\mat{R_{2}}$,  $\mat{ T_{1}}$, $\mat{ T_{2}}$, $\mat D$}	
+		\State $\mat{D^r} \leftarrow$ \texttt{remap}($\mat{D}$, $\vec{x'}^h$)
+		\State $\vec{l_{t',t}}\leftarrow$ \texttt{conjugate\_coordinates}($\vec {x'}^h$, $\mat K$, $\mat{R_{2}}$, $\mat{R_{1}}$,  $\mat{ T_{2}}$, $\mat{ T_{1}}$, $\mat D^r$)
+		\State \Return $\exp\left(-{\lVert \vec x - \vec{l_{t',t}}\rVert^2}\cdot\frac{1}{2\sigma_d^2}\right)$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\texttt{compute\_energy\_data}}
+	\label{alg:energy_data}	
+	\begin{algorithmic}[1]
+		\Require $\mat K$ to be the camera intrinsic matrix
+		\Require $\mathcal{R}$ to be a sequence of camera rotation matrices
+		\Require $\mathcal{T}$ to be a sequence of camera translation vectors
+		\Require $\mathcal{I}$ to be a sequence of images
+		\Require $\mathcal{D}$ to be a sequence of disparity-maps
+		\Statex
+		\Procedure{compute\_energy\_data\_init}{$t$, $\mat K$, $\mathcal{R}$, $\mathcal{T}$, $\mathcal{I}$, $\mathcal{D}$}		
+
+		\State $\mat {I_t}$, $\mat {R_t}$, $\mat {T_t} \leftarrow \mathcal{I}[ t ]$, $\mathcal{R}[t]$, $\mathcal{T}[t]$\Comment{get image and camera param. for frame $t$}
+		\State $\vec x^h \leftarrow$ \texttt{homogeneous\_coor\_grid}($h$,$w$)
+		\State Create table $\mat L$ with $h \times w\times m$ elements, initialized with zero
+		%\State L $\leftarrow$ $m\times h \times w$ table, initialized with zero
+		\Statex
+		\For {$t'\leftarrow 0\dots n$}
+		\State $\mat{I_{t'}}$, $\mat {R_{t'}}$, $\mat {T_{t'}} \leftarrow \mathcal{I}[ t' ]$,  $\mathcal{R}[t']$, $\mathcal{T}[t']$\Comment{get image and camera param. for frame $t'$}
+		\Statex
+		\For {${label} \leftarrow 0\dots m$}
+		\State Create matrix $\mat D$ with $h \times w$ elements, initialized with value $d_{label}$
+		%\State $\mathrm{d}[i,j] \leftarrow \mathrm{depth\_values}[level]$, $\forall i,\forall j$
+		\State $\vec{x'}^h\leftarrow$ \texttt{conjugate\_coor}($\vec x^h$, $\mat K$, $\mat{R_{t}}$, $\mat{R_{t'}}$,  $\mat{ T_{t}}$, $\mat{ T_{t'}}$, $\mat D$)
+		\State $\mat{I^r_{t'}} \leftarrow$ \texttt{remap}($\mat{I_{t'}}$, $\vec{x'}^h$)
+		\State $p_c \leftarrow$  $\sigma_c$ / $(\sigma_c +$ \texttt{reduce\_norm($\mat{I_t} - \mat{I^r_{t'}}$)})
+		\If {use\_bundle}\Comment{Check if Bundle Optimization}
+		\State $p_v \leftarrow $\texttt{compute\_pv}($\vec x^h$, $\mat K$, $\mat{R_{t}}$, $\mat{R_{t'}}$,  $\mat{ T_{t}}$, $\mat{ T_{t'}}$, $\mathcal D[t']$)
+		\State $\mat L[:,:,label] \leftarrow \mat L[:,:label] + p_c\cdot p_v$\Comment{likeliness for label $label$}
+		\Else
+		\State $\mat L[:,:,label] \leftarrow \mat L[:,:label] + p_c$\Comment{likeliness for label $label$}
+		\EndIf
+		\EndFor
+		\EndFor
+		\Statex
+		\State $\mat u \leftarrow$ $1$/ \texttt{reduce\_max}($\mat L$, \textit{last-axis})\Comment{normalization factor w.r.t. to label axis}
+		\State \Return $1 - \mat u\cdot \mat L$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+

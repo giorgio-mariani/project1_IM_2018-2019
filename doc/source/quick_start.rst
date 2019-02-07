@@ -120,7 +120,7 @@ the function :func:`compute_energy.compute_energy_data` to perform the *bundle o
 
 .. note::
 
-  Depth-maps directories are generally the result of a previous invokation of the system.
+  Depth-maps directories are generally the result of a previous invocation of the system.
 
 These depth-maps are stored as **.npy** files.
 Depth-maps stored inside this directory must be named ``depth_<num>``, with ``<num>`` numeric string 

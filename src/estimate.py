@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
+import argparse
 import os
+import shutil
 
-import numpy as np
+
 import cv2
+import numpy as np
 
+import compute_energy as ce
 import lbp
 import utils
-import compute_energy as ce
 
 ###############################################################################
 
-def estimate(configfile):
+def estimate(configparams):
     """Estimate and store depthmaps from a picture sequence.
 
     The picture sequence directory, and a configuration parameters is 
@@ -30,11 +33,13 @@ def estimate(configfile):
 
     Parameters
     ----------
-    configfile : str or unicode
-        Filename of the configuration file.
+    configparams : dict
+        Configuration parameters. This dictionary contains information about 
+        necessary files directories, as well as the values for various 
+        parameters used by the system.
     """
 
-    configparams = utils.parse_configfile(configfile)
+    #configparams = utils.parse_configfile(configfile)
     
     # create necessary objects
     out_dir = configparams["output_directory"]
@@ -48,18 +53,25 @@ def estimate(configfile):
     
     # create output directory (TODO remove if an exception occur and the folder is empty)
     os.mkdir(out_dir)
-    
-    for i in range(sequence.start, sequence.end):
-        print "Estimating depth-map for frame ", str(i)
-        depthmap = compute_frame(i-sequence.start, sequence, configparams)
-        depthmap_filename = os.path.join(out_dir, "depth_"+str(i).zfill(4))
+    try:
+        for i in range(sequence.start, sequence.end):
+            print "Estimating depth-map for frame ", str(i)
+            depthmap = compute_frame(i-sequence.start, sequence, configparams)
+            depthmap_filename = os.path.join(out_dir, "depth_"+str(i).zfill(4))
 
-        # save depth info            
-        np.save(depthmap_filename, depthmap)
-        
-        # save picture of image (useful for debug purposes)
-        Max = np.float32(depthmap.max())
-        cv2.imwrite(depthmap_filename+'.png', np.uint8(depthmap/Max*255))
+            # save depth info            
+            np.save(depthmap_filename, depthmap)
+            
+            # save picture of image (useful for debug purposes)
+            Max = np.float32(depthmap.max())
+            cv2.imwrite(depthmap_filename+'.png', np.uint8(depthmap/Max*255))
+    except StandardError as e:
+        print "Error: "+e.message
+    except Exception as e:
+        print "Internal Exception: "+e.message
+    finally:
+        if len(os.listdir(out_dir)) == 0:
+            os.rmdir(out_dir)
 
 def compute_frame(frame, sequence, configparams):
     """Estimate the (per-pixel) depth labels for a single frame in the sequence.
@@ -129,4 +141,59 @@ def compute_frame(frame, sequence, configparams):
 
 #------------------------------------------------------------------------------
 
-#estimate('../configfile_example.txt')
+#estimate('../configfile_example2.txt')
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Depth-maps recovery from video sequence.')
+    parser.add_argument(
+        '-i','--init',
+        action='store_true',
+        help='flag indicating if Disparity Initialization should be used')
+
+    parser.add_argument(
+        '-b','--bundle',
+        action='store_true',
+        help='flag indicating if bundle optimization should be used')
+
+    parser.add_argument(
+        'config_file',
+        type=str,
+        help='configuration file.')
+    args = parser.parse_args()
+
+    try:
+        configparams = utils.parse_configfile(args.config_file)
+    except StandardError as e:
+        print "Error: "+e.message
+    except Exception as e:
+        print "Internal Error: "+e.message
+
+    if args.init and args.bundle:
+        output_dir = configparams["output_directory"]
+        depthmaps_dir= ".depthmaps_tmp"
+        
+        if os.path.exists(depthmaps_dir):
+            shutil.rmtree(depthmaps_dir)
+
+        # compute Disparity Initialization
+        print "Starting Disparity Initialization"
+        configparams["output_directory"] = depthmaps_dir
+        configparams["depthmaps_directory"] = None
+        estimate(configparams)
+
+        # compute Bundle Optimization
+        configparams["output_directory"] = output_dir
+        configparams["depthmaps_directory"] = depthmaps_dir
+        print "Starting Bundle Optimization"
+        estimate(configparams)
+        shutil.rmtree(depthmaps_dir)
+
+    elif args.init:
+        print "Starting Disparity Initialization"
+        configparams["depthmaps_directory"] = None
+        estimate(configparams)
+    elif args.bundle:
+        print "Starting Bundle Optimization"
+        if "depthmaps_directory" not in configparams:
+            "Error: parameter \"depthmaps_directory\" must be in the configuration file if bundle optimization is used!"
+        estimate(configparams)

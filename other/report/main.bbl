@@ -59,18 +59,6 @@
       \verb https://doi.org/10.1109/34.1000236
       \endverb
     \endentry
-    \entry{CVGweb}{online}{}
-      \field{sortinit}{C}
-      \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
-      \field{labeltitlesource}{title}
-      \field{title}{Computer Vision Group (Zhejiang University) website}
-      \verb{urlraw}
-      \verb http://www.zjucvg.net
-      \endverb
-      \verb{url}
-      \verb http://www.zjucvg.net
-      \endverb
-    \endentry
     \entry{Felzenszwalb2006}{article}{}
       \name{author}{2}{}{%
         {{hash=dd6364b71f6339704ab77e84ec8db222}{%

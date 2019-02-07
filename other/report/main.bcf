@@ -1998,11 +1998,18 @@
     <bcf:citekey order="1">Zhang2009</bcf:citekey>
     <bcf:citekey order="2">Zhang2009</bcf:citekey>
     <bcf:citekey order="3">Zhang2009</bcf:citekey>
-    <bcf:citekey order="4">CVGweb</bcf:citekey>
+    <bcf:citekey order="4">Zhang2009</bcf:citekey>
     <bcf:citekey order="5">Zhang2007</bcf:citekey>
     <bcf:citekey order="6">Comaniciu202</bcf:citekey>
     <bcf:citekey order="7">Felzenszwalb2006</bcf:citekey>
-    <bcf:citekey order="8">Felzenszwalb2006</bcf:citekey>
+    <bcf:citekey order="8">Comaniciu202</bcf:citekey>
+    <bcf:citekey order="9">Zhang2009</bcf:citekey>
+    <bcf:citekey order="10">Zhang2009</bcf:citekey>
+    <bcf:citekey order="11">Zhang2009</bcf:citekey>
+    <bcf:citekey order="12">Zhang2007</bcf:citekey>
+    <bcf:citekey order="13">Zhang2009</bcf:citekey>
+    <bcf:citekey order="14">Felzenszwalb2006</bcf:citekey>
+    <bcf:citekey order="15">Felzenszwalb2006</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

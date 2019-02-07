@@ -1,0 +1,178 @@
+%%%----------------------------------------------------------
+
+
+\chapter{Complete Approach Description}
+
+% in this section I will explain the implementation of each algorithm more in detail
+ 
+ The goal of the system is to estimate a sequence of disparity-maps $\hat D = D_0, \dots, D_n$, using a sequence of images $\hat I = I_0, \dots, I_n$ and camera parameters.
+ Specifically, for each image $I_t\in \hat I$ the camera's \emph{position}, \emph{rotation}, and \emph{intrinsic matrix} are assumed known, and are respectively noted as $\vec{T}_t$, $\mat{R}_t$, and $\mat K$ (note that the \emph{intrinsic matrix} does not depend on the frame).
+ %TODO add explenation of estimation of camera parameters
+ The estimated pixel $\vec x$'s disparity\footnote{The disparity of a certain pixel $\vec x$ correspond to the reciprocal of the pixel's depth ($\frac{1}{z_{\vec x}}$), however, the terms \emph{depth} and \emph{disparity} are sometimes used interchangeably.} at time $t$ is noted with $D_t(\vec x)$ (sometimes also referred to as $d_{\vec x}$ for shortness sake); the admissible disparity values used during the disparity-maps recovery are taken from the set $[d_{min}, d_{max}]$.
+ 
+ %after its quantization into $m$ uniformly spaced values $d_{min}=d_0, \dots, d_{m-1} = d_{max}$. This disparity quantization is necessary in order to execute the algorithms utilized by the system. This is especially true for Belief Propagation, since it makes use of discrete labels instead of real values.
+
+\section{Disparity Initialization}\label{sec:init_phase}
+During the initialization phase, for each frame in the input video, an initial disparity-map is estimated; this estimation occurs within a two-step process: firstly, the depth-maps are initialized using a multi-view photo-consistency approach and \emph{Loopy Belief Propagation} (\LBP) \cite{Felzenszwalb2006}. Then, \emph{mean-shift segmentation}\cite{Comaniciu202} is employed over the sequence's images, dividing each picture into several segments similar in color. For each segment a "disparity plane" is thus fit to the image's disparity-map.
+
+\subsection{Energy Minimization}
+The initial disparity-maps estimation process works by minimizing the energy function
+\begin{equation}
+\label{eq:init_energy}
+E_{init}(\hat D) = \sum_{t} \left(\DataCostInit(D_t) + \ContinuityCost(D_t)\right).
+\end{equation}
+The variable $t$ iterates over the video sequence frames, while the term $\DataCostInit(\cdot)$ indicates how much photo-consistent is the input depth-map $D_t$. Finally, $\ContinuityCost(\cdot)$ encodes how smooth\footnote{That is, how much difference there is between adjacent disparities.} the $D_t$ disparity-map is.\\
+
+\begin{Important}
+	The disparity values used during this estimation are quantized into $m$ uniformly spaced values $d_{min}=d_0, \dots, d_{m-1} = d_{max}$. This disparity quantization is necessary in order to execute the algorithms utilized by the system. This is especially true for Belief Propagation, since it makes use of discrete labels instead of real values.
+\end{Important}
+
+\paragraph{Energy Data Term.}
+$\DataCostInit(\cdot)$ is defined in terms of \emph{disparity likelihood}, which in turn is defined as
+$$L_{init}(\vec x, d) = \sum_{t'} p_c(\vec x,d,t,t').$$
+This likelihood is used to the describe the photo-consistency of a certain disparity value $d$. Indeed, the function $p_c(\vec x,d,t,t')$ describes how much the pixel $\vec x$, using disparity $d$, is photo-consistent, which is expressed as
+$$p_c(\vec x,d,t,t') = \frac{\sigma_c}{\sigma_c + \Vert I_t(\vec x) - I_{t'}(l_{t,t'}(\vec x,d))\rVert},$$
+with $\sigma_c$ a constant value and $l_{t,t'}(\vec x,d)$ the projection of pixel $\vec x$ (taken from $I_t$) at time $t'$, using disparity $d$.
+Finally, 
+\begin{equation}\label{eq:init_energy_data}
+\DataCostInit(D_t) = \sum_{\vec x} 1 -  u(\vec x) \cdot L_{init}(\vec x,D_t(\vec x)),
+\end{equation}
+with $u(\vec x)$ a normalization factor, such that the maximum value of the likelihood is 1; more precisely, it is true that $\max_{d} \{u(\vec x)\cdot L_{init}(\vec x, d)\} = 1$ (\ie the normalization is applied only with respect of the disparity value $d$ and not the pixel $\vec x$).
+
+\paragraph{Energy Smoothness Term.}
+The smoothness term $\ContinuityCost(D_t)$ is used to impose a smoother gradient during estimation.
+This smoothness imposing strategy assigns an higher cost if two adjacent pixels have starkly different disparity-labels.
+This label difference is measured using the function
+$$\rho(d_{\vec x}, d_{\vec y}) = \min\{|d_{\vec x}-d_{\vec y}|, \eta\}.$$
+The term $\eta$ is a real constant positive value, and it represents the upper limit of this smoothness imposing approach: after $\eta$ the distance between two labels does not matter during the energy minimization.
+
+The value $\rho(\cdot)$ is then weighted using an adaptive smoothness weight $\lambda(\vec x, \vec y)$, which encodes changes of color between the adjacent pixels $\vec x$, $\vec y$: if $\vec x$ and $\vec y$ have strongly different colors in $I_t$ then the disparity smoothness requirement should be less strict, since they are less likely to be in a contiguous three-dimensional area. This is expressed as 
+$$\lambda(\vec x,\vec y) = w_s\cdot \frac{u_\lambda(\vec x)}{|| I_t(\vec x) - I_t(\vec y)|| + \epsilon},$$
+with $w_s$ a constant real positive value and $u_{\lambda}(\vec x)$ a normalization factor
+$$
+	u_{\lambda}(\vec x) = {|N(\vec x)|}\big/{\sum_{\vec y'\in N(\vec x)} \frac{1}{||I_t(\vec x) - I_t(\vec y')||+\epsilon}}.
+$$
+The smoothness term definition is then
+\begin{equation}
+	\ContinuityCost(D_t) = \sum_{\vec x} \sum_{\vec y\in N(\vec x)} \lambda(\vec x,\vec y)\cdot \rho(D_t(\vec x),D_t(\vec y)).
+\end{equation}
+
+%\paragraph{Minimization.}
+%$E_{init}$ is then minimized using \LBP{}, process which requires a-priori the computation of an $h\times w\times m$ bi-dimensional table that stores the value
+%$$1-u(\vec x)\cdot L_{init}(\vec x,d)$$ for each possible disparity-values $d$ and pixel $\vec x$. To see how this table is computed look at \cref{sec:init_phase_alg}.
+
+\subsection{Disparity Planes Fitting}\label{sec:color_segmentation}
+Using \emph{mean-shift segmentation}, it is possible to divide an image $I_t$ into different segments, which are then fitted to the initial estimation $D_t$:
+\begin{enumerate}
+\item First, the depth of the plane is selected by using the disparity that minimizes \cref{eq:init_energy}. The slope is assumed to be 0 during the fitting process.
+\item Then, by using \emph{Levenberg-Marquardt algorithm}, the planes' slopes are estimated.
+\end{enumerate}
+These output planes represent the new refined depth-map, and are ready to be processed by the next phase of the algorithm.%(or used independently if precision is not that important)
+
+\section{Bundle Optimization}\label{sec:bundle_phase}
+\emph{Bundle optimization} is similar to the first step of the initialization phase, since it also makes use of consistency constraints and \LBP{} for disparity-maps polishing. However, the energy function to minimize is slightly different:
+\begin{equation}
+	E(\hat D) = \sum_{t} \left(\DataCost(D_t, \hat D) +
+	\ContinuityCost(D_t)\right).
+\end{equation}
+The term $\ContinuityCost(\cdot)$ is the same as in \cref{eq:init_energy}, in contrast with $\DataCost(\cdot,\cdot)$, which substitutes $\DataCostInit(\cdot)$, and requires the sequence of initialized disparity-maps ($\hat D$). These  are then used to define geometry coherence constraints, which in turn will allow the estimation of more coherent and realistic disparity values.
+
+The $\DataCost(\cdot, \cdot)$ terms is defined similarly to $\DataCostInit(\cdot)$, with only one major difference: the likelihood $L_{init}$ term is replaced by $L$, which is defined as
+\begin{equation}\label{eq:bundle_energy_data}
+L(\vec x, d) = \sum_{t'} p_c(\vec x,d,t,t')\cdot p_v(\vec x, d, D_{t'}),
+\end{equation}
+with $p_v$ the function used to encode geometric coherence:
+\begin{equation} \label{eq:pv}
+	p_v(\vec{x},d,D_{t^\prime}) = \exp \left(-\frac{\lVert \vec x - \mathop{l_{t',t}}(\vec x', D_{t'}(\vec x')) \rVert^2}{2\sigma^2_d}\right),
+\end{equation}
+with $\vec x'= l_{t,t'}(\vec x,d)$.
+According to this definition, $p_v$ encodes the distance between the coordinates $\vec x$ and $l_{t',t}(\vec x', D_{t'}(\vec x'))$ using a gaussian distribution: the closer the two coordinates are, the higher $p_v$ is going to be; if they are the same, then it means that the depth values $d$ and $D_{t'}$ are geometrically coherent.
+
+
+
+\section{Space-Time Fusion}\label{sec:spacetime_fusion}
+While bundle optimization is able to improve the recovered disparity-maps obtained after disparity initialization, it is still not able to remove all the noise caused by the required disparity quantization and possible estimation errors; to solve this, a \emph{space-time fusion} algorithm is introduced in the recovery procedure. This further phase will polish the obtained results and provide smoother and real valued disparity-maps.
+The space-time fusion will also exploit the sparse feature points generally obtained by \SFM{} algorithms in order to polish and enhance the disparity-maps.
+This space-time fusion works by defining a number of constraints using the estimated disparity values $\{D_t\}_{t=0..n}$ in order to setup a linear system which is consequently solved using an iterative \emph{conjugate gradient solver}. The constraints used by the linear system can be divided into three categories:
+\emph{spatial continuity}, \emph{temporal coherence}, and \emph{sparse feature correspondences}.
+The solver resulting disparity-values are noted  as $\{D^*_t\}_{t=0..n}$.\\
+
+\begin{Note}
+In order to avoid severe memory consumption, space-time fusion is performed in batches of only 5-10 frames, instead of using the whole sequence.
+\end{Note}
+
+
+{
+	%add newcommands
+	\newcommand{\D}[1]{\mathop{D_{#1}}}
+	\newcommand{\Dstar}[1]{\mathop{D^*_{#1}}}
+	
+	\subsection{Spatial Continuity}
+	The depth structure of the recovered disparity-maps is generally correct, so it should be preserved in the fused disparity-maps. To do so, it is imposed that the difference between two neighboring pixels' disparities should mirror the one in the bundle disparity-maps.
+	That is, for each frame $t$ and pixel $(x,y)$, the spatial constraints
+	\begin{align*}
+	\Dstar{t}(x+1,y) - \Dstar{t}(x,y)&=\D{t}(x+1,y) - \D{t}(x,y),\\
+	\Dstar{t}(x, y+1) - \Dstar{t}(x,y)&=\D{t}(x,y+1) - \D{t}(x,y)
+	\end{align*}
+	are taken into consideration during the space-time fusion. 
+	
+	\subsection{Temporal Coherence}
+	It is important for the estimated disparity-maps to be temporally coherent, that is, if a pixel $x$ has a certain disparity at frame $t$, then the same pixel projected at frame $t'$ (noted as $x'$) must have a coherent disparity values. This can be mathematically expressed, using epipolar geometry, through the formula
+	\begin{equation}\label{eq:conj_pixel}
+	\vec{x'} = 
+	\Transpose{(x_{\vec x'} , y_{\vec x'} , z_{\vec x'} )} = 
+	z_{\vec x} \Transpose{\mat R_{t'}} \mat R_{t} \mat K^{1}_{t'} \vec{x}^h + 
+	\Transpose{\mat R_{t'}}(\vec T_t - \vec T_{t'}),
+	\end{equation}
+	where $\mat R$ is the rotation matrix, $\vec T$ the translation vector, and $\mat K$ is the intrinsic matrix.  It should also be noted, in order to avoid confusion, that $z_{\vec x}$ and $z_{\vec x'}$ are depth values, not disparities.
+
+	It is then possible to simplify \cref{eq:conj_pixel} to 
+	$z_{\vec x'} = \vec A\cdot z_{\vec x} + \vec B$,
+	with $\vec A$ and $\vec B$ dependent on the pixel $\vec x$ and the camera parameters. This is useful, since it is able to give a direct correlation between the two depth values. 
+	Indeed, if it is assumed that
+	$$D^*_{t'}(\vec x') = \frac{1}{z_{\vec x'}}\text{ and }
+	D^*_{t}(\vec x) = \frac{1}{z_{\vec x}},
+	$$
+	then it is possible to assert	
+	\begin{equation*}
+	\frac{1}{z_{\vec x'}} = \frac{1}{\vec A\cdot z_{\vec x} + \vec B} \iff
+	D^*_{t'}(\vec x') = \frac{D^*_t(\vec x)}{\vec A + \vec B\cdot D^*_t(\vec x)},
+	\end{equation*}
+	which in turn can be used to define a temporal coherence constraint 
+	over adjacent frames ($t$ and $t+1$), \ie
+	\begin{equation}\label{eq:temp_constraint}
+	\alpha \cdot \left( D^*_{t+1}(\vec x^{t\rightarrow t+1}) - \frac{D^*_t(\vec x)}{\vec A + \vec B\cdot D^*_t(\vec x)}\right) = 0.
+	\end{equation}
+	The vector  $\vec{x}^{t \leftarrow t+1}$ indicates the projection of pixel $x$ at time $t+1$ using disparity $D^*_{t}(\vec x)$, while the constant $\alpha$ is used to adjust the constraint's influence during estimation. In the experiments described in \cite{Zhang2009},  $	\alpha = 2$.\\
+
+	\begin{Important}
+		Since the used conjugate gradient solver requires linear constraints in order to work efficiently, \cref{eq:temp_constraint} is substituted by 
+		\begin{equation*}
+		\alpha \cdot\left( D^*_{t+1}(\vec x^{t\rightarrow t+1}) - \frac{D^*_t\left(\vec x\right)}{\vec A + \vec B\cdot \widetilde{D}^*_t(\vec x)}\right) = 0,
+		\end{equation*}
+		with $\widetilde{D}^*_t(\vec x)$ the value of ${D}^*_t(\vec x)$ in the previous iteration (or ${D}_t(\vec x)$ during the first iteration).
+	\end{Important}
+	%TODO include reliability of pixels
+	
+	{
+	\newcommand{\ProjectedFeature}[2]{\vec{u}^{#1}_{\vec{#2}}}
+	
+	\subsection{Sparse Feature Correspondences}
+ 	During the camera parameters estimation (\SFM{} phase), it is possible to extract a set of sparse 3D feature points from the video. Hence, it is possible to exploit such feature points in order to guide the space-time fusion estimation process to more precise results. This is accomplished by projecting such points to a specific frame $t$ coordinate system, and  then imposing the feature point's depth to the corresponding pixel for frame $t$. 
+ 	
+ 	Having a 3D feature point $\vec X$ and a frame $t$, it is possible to compute its projection $\ProjectedFeature{t}{\vec X}$ using the equation
+ 	$$
+ 	\ProjectedFeature{t}{\vec X} = \mat{K}\Transpose{\mat{R}_t}\left(\vec X - \vec{T}_t\right),
+ 	$$
+ 	with $\mat{K}$, $\mat{R}_t$, and $\vec T_t$ the camera parameters.
+ 	The depth coordinate of $\ProjectedFeature{t}{\vec X}$ (noted as $d^{\vec X}_t$) is then used to add the constraint
+ 	\begin{equation}\label{eq:sparse_constraint}
+ 		\beta\cdot\left(D^*_t(\ProjectedFeature{t}{\vec X}) - d_t^{\vec X}\right) = 0.
+ 	\end{equation}
+ 	with $\beta=100$ used to adjust the constraint's influence during estimation. 
+ 	It is also important to note that constraints like \cref{eq:sparse_constraint} are used only for feature points $\vec X$ considered \emph{reliable}, that is, such that 
+ 	$\lVert D^*_t(\ProjectedFeature{t}{\vec X}) - d_t^{\vec X} \rVert < \kappa$, where $\kappa$ is a threshold.
+ 	}
+}
+
+

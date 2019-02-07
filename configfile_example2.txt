@@ -1,0 +1,16 @@
+{
+"camera_file": "./data/tsukuba/cameras.txt",
+"pictures_directory": "./data/tsukuba/src",
+"pictures_file_extension": ".png",
+"depthmaps_directory": "./out_stereo2",
+"output_directory": "./out_stereo3",
+"height":288,
+"width":384,
+"start_frame":0,
+"end_frame":2,
+"depth_levels":100,
+"depth_min":0.0,
+"depth_max":50.1,
+"epsilon":50.0,
+"sigma_c":10.0
+}
