@@ -1,0 +1,183 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Module lbp.py &#8212; IM_Project1_2018-2019 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Module utils.py" href="utils.html" />
+    <link rel="prev" title="Module compute_energy.py" href="compute_energy.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lbp">
+<span id="module-lbp-py"></span><h1>Module <em>lbp.py</em><a class="headerlink" href="#module-lbp" title="Permalink to this headline">¶</a></h1>
+<p>Loopy Belief Propagation</p>
+<dl class="function">
+<dt id="lbp.lbp">
+<code class="descclassname">lbp.</code><code class="descname">lbp</code><span class="sig-paren">(</span><em>data_cost</em>, <em>edge_weights</em>, <em>step=1.0</em>, <em>eta=1.0</em>, <em>inter_it=2</em>, <em>intra_it=2</em>, <em>scale=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lbp.html#lbp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lbp.lbp" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Loopy Belief Propagation</em> (LBP) algorithm.</p>
+<p>LBP is a dynamic programming algorithm that can be used to find
+approximate solutions for energy minimization problems over labeling 
+of graphs. In particular, LBP works only with grid-graphs, and 
+this specific implementation works only with graphs representing
+images; each pixel is a vertex, adjacents pixel are assumed connected
+by an edge (only in the four cardinal directions, no oblique adjacents).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>data_cost: numpy array, type float32</strong></dt>
+<dd><p class="first last">Array with shape <cite>[labels, height, width]</cite> representing the <strong>data cost</strong> 
+of the energy funtion.</p>
+</dd>
+<dt><strong>edge_weights: list of numpy arrays, type float32</strong></dt>
+<dd><p class="first">List of four arrays with shape <cite>[height, width]</cite> representing the 
+weights used by the <strong>discontinuity cost</strong>.</p>
+<ul class="last simple">
+<li>The first array contains weights for edges of type <img class="math" src="_images/math/e5d68d5f0a637e0a7615c1d4f5bab9471eb942f4.png" alt="(p, p_{up})"/>,
+with <img class="math" src="_images/math/833d9e394a0215c3e3642cbe80cccb9cef811731.png" alt="p=(y,x)"/> and <img class="math" src="_images/math/59cf84c86ad090a88ea8a84978fd8bc8a1b2f9cf.png" alt="p_{up}=(y+1, x)"/></li>
+<li>The second array contains weights for edges of type <img class="math" src="_images/math/84639c0bd3f5b213821e4ad88d84bde1ea99aed6.png" alt="(p, p_{down})"/>,
+with <img class="math" src="_images/math/833d9e394a0215c3e3642cbe80cccb9cef811731.png" alt="p=(y,x)"/> and <img class="math" src="_images/math/e871c829fdb3524c4389db170b56f9d5c07d6621.png" alt="p_{down}=(y-1, x)"/></li>
+<li>The third array contains weights of type <img class="math" src="_images/math/c5a7fcdda20bb178dd046839b22270561655b004.png" alt="(p, p_{left})"/>,
+with <img class="math" src="_images/math/833d9e394a0215c3e3642cbe80cccb9cef811731.png" alt="p=(y,x)"/> and <img class="math" src="_images/math/5d3741a15d3c65a41215730b6c59adae963a19b9.png" alt="p_{left}=(y, x+1)"/></li>
+<li>The fourth array contains weights of type <img class="math" src="_images/math/89e43a8f173ea72229edf43d060eab38910ae30e.png" alt="(p, p_{right})"/>,
+with <img class="math" src="_images/math/833d9e394a0215c3e3642cbe80cccb9cef811731.png" alt="p=(y,x)"/> and <img class="math" src="_images/math/1da851be740440b80617d900964d512851fd3dc4.png" alt="p_{right}=(y, x-1)"/></li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>numpy array, type uint16</strong></dt>
+<dd><p class="first last">Array with shape <cite>[height, width]</cite> containing the depth-values labels 
+(that is, an integer that can be used to obtain the disparity value)
+per pixel.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Given a graph with vertices (pixels) <cite>P</cite> and edges <cite>N</cite>, and a set of
+labels <cite>L</cite> (with cardinality <cite>m</cite>), the goal of LBP is to find a 
+labeling of the vertices <img class="math" src="_images/math/cd3739d53267ebbb4bfe003b38b4de343a18b204.png" alt="\{f_p\}_{p \in V}"/> such that 
+the energy function</p>
+<div class="math">
+<p><img src="_images/math/06aa5253fb4c1c4dc8b467328f0feec33abcd326.png" alt="\sum_{(p,q)\in N} V(f_p,f_q) + \sum_{p \in P}  D(p, f_p)"/></p>
+</div><p>is minimized. The terms <img class="math" src="_images/math/85597a8177437a60ccc78f2cafa27c2e56240067.png" alt="V(\cdot,\cdot)"/> and <img class="math" src="_images/math/6778a6bd8ca32c52472e780e4469df0c40e79275.png" alt="D(\cdot,\cdot)"/>
+are rispecively names <strong>discontinuity cost</strong> and <strong>data cost</strong>.
+The <strong>data cost</strong> can be any arbitrary mapping between pixel-label pairs
+over real values (in this case it is passed as input through <em>data_cost</em>).
+On the other hand, the <strong>discontinuity cost</strong> between two pixels <cite>p</cite> 
+and <cite>q</cite> is defined as</p>
+<div class="math">
+<p><img src="_images/math/435c778557d2652fa57d781da353ed2457987fd0.png" alt="w_{p,q}\cdot\min(s||d_p - d_q||, \eta) ,"/></p>
+</div><p>with <img class="math" src="_images/math/5635a7c34414599c2452d72430811e816b460335.png" alt="\eta"/> and <img class="math" src="_images/math/63751cb2e98ba393b0f22e45ca127c3cebb61487.png" alt="s"/> positive constants, while <img class="math" src="_images/math/89d300cc4eff34575fa54485397056fa7b361de6.png" alt="w_{p,q}"/> is 
+an edge dependent scalar value (stored in <em>edge_weights</em>).</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">IM_Project1_2018-2019</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick-Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_file.html">Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="estimate.html">Module <em>estimate.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="compute_energy.html">Module <em>compute_energy.py</em></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Module <em>lbp.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Module <em>utils.py</em></a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="compute_energy.html" title="previous chapter">Module <em>compute_energy.py</em></a></li>
+      <li>Next: <a href="utils.html" title="next chapter">Module <em>utils.py</em></a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giorgio Mariani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/lbp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

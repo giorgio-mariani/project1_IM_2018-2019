@@ -1,0 +1,477 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>compute_energy &#8212; IM_Project1_2018-2019 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for compute_energy</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span> 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span> <span class="nn">utils</span> 
+
+
+<span class="c1">###############################################################################</span>
+<div class="viewcode-block" id="compute_energy_data"><a class="viewcode-back" href="../compute_energy.html#compute_energy.compute_energy_data">[docs]</a><span class="k">def</span> <span class="nf">compute_energy_data</span><span class="p">(</span>
+    <span class="n">frame_index</span><span class="p">,</span> 
+    <span class="n">sequence</span><span class="p">,</span> 
+    <span class="n">window_side</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> 
+    <span class="n">sigma_c</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> 
+    <span class="n">sigma_d</span><span class="o">=</span><span class="mf">2.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the data cost term, for frame *frame_index*, to be used </span>
+<span class="sd">    for the LBP algorithm.</span>
+
+<span class="sd">    This function computes an array with shape `[m, h, w]`, where `m` is </span>
+<span class="sd">    the number of depth labels used, `h` and `w` are respectively the </span>
+<span class="sd">    pictures&#39; height and width.</span>
+<span class="sd">    The value in this array at position `(d, y, x)`, is inversely </span>
+<span class="sd">    proportional to the likelihood that pixel `(y,x)` has disparity `d`.</span>
+<span class="sd">    this value is computed using multi-stereo photo consistency constraints,</span>
+<span class="sd">    and, if ``sequence.use_bundle()==True``, geometric consistency with previously</span>
+<span class="sd">    estimated depth-maps (*bundle optimization*).</span>
+<span class="sd">    The result of this function should be used as **data cost** for the LBP</span>
+<span class="sd">    algorithm (see :func:`lbp.lbp`).</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    lbp.lbp: *Loopy Belief Propagation* implementation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    frame_index : int</span>
+<span class="sd">        Frame whose depth-map is estimated.</span>
+
+<span class="sd">    sequence : utils.Sequence</span>
+<span class="sd">        Object containing parameters necessary to the depth-maps estimation.</span>
+<span class="sd">        It contains the camera matrices, picture arrays, length of the</span>
+<span class="sd">        sequence, etc. If *sequence* contains also previously estimated </span>
+<span class="sd">        depth-maps, then the *bundle optimization* phase is also executed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy array, type float32</span>
+<span class="sd">        Array with shape `[m, h, w]`, with `m` the number of possible depth </span>
+<span class="sd">        labels, and `h` and `w` height and width of frame *frame_index*.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># TODO check input validity</span>
+    
+    <span class="c1"># set the range of possible frames </span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">frame_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sequence</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">sequence</span><span class="o">.</span><span class="n">start</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="o">-</span> <span class="n">window_side</span> <span class="o">&lt;</span> <span class="n">start</span> <span class="p">:</span>
+        <span class="n">window_start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="n">window_end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">window_start</span> <span class="o">+</span> <span class="n">window_side</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">t</span> <span class="o">+</span> <span class="n">window_side</span> <span class="o">+</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
+        <span class="n">window_end</span> <span class="o">=</span> <span class="n">end</span>
+        <span class="n">window_start</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">window_end</span> <span class="o">-</span> <span class="n">window_side</span><span class="o">*</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">window_start</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">window_side</span>
+        <span class="n">window_end</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="n">window_side</span> <span class="o">+</span> <span class="mi">1</span> 
+    
+    <span class="c1"># get paramaters</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">sequence</span><span class="o">.</span><span class="n">width</span>
+    <span class="n">levels</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">depth_levels</span>
+    <span class="n">depth_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+        <span class="n">sequence</span><span class="o">.</span><span class="n">depth_min</span><span class="p">,</span>
+        <span class="n">sequence</span><span class="o">.</span><span class="n">depth_max</span><span class="p">,</span>
+        <span class="n">sequence</span><span class="o">.</span><span class="n">depth_levels</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="c1"># get image at frame cf</span>
+    <span class="n">I_t</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">I</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+    
+    <span class="c1"># initialize indices coordinates</span>
+    <span class="n">x_h</span> <span class="o">=</span> <span class="n">homogeneous_coord_grid</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">)</span> <span class="c1">#[3, h, w]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="c1">#[h, w]</span>
+    
+    <span class="c1"># initialize Likelihood table L </span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">levels</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="c1">#[levels, h, w]</span>
+
+    
+    <span class="k">for</span> <span class="n">t_prime</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">window_start</span><span class="p">,</span> <span class="n">window_end</span><span class="p">)):</span>
+        <span class="c1"># skip if same image</span>
+        <span class="k">if</span> <span class="n">t_prime</span> <span class="o">==</span> <span class="n">t</span><span class="p">:</span> <span class="k">continue</span>  
+    
+        <span class="c1"># get image at frame i</span>
+        <span class="n">I_t_prime</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">I</span><span class="p">[</span><span class="n">t_prime</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+            <span class="c1"># photo-consistency constraint ------------------------------------</span>
+            
+            <span class="c1"># fill each position with the current level depht value</span>
+            <span class="n">d</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">depth_values</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> 
+
+            <span class="c1"># compute conjugate pixel position using the depth level at time t</span>
+            <span class="n">x_prime_h</span> <span class="o">=</span> <span class="n">conujugate_coordinates</span><span class="p">(</span>
+                    <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
+                    <span class="n">pose1</span><span class="o">=</span><span class="n">t</span><span class="p">,</span>
+                    <span class="n">pose2</span><span class="o">=</span><span class="n">t_prime</span><span class="p">,</span>
+                    <span class="n">coorsxy</span><span class="o">=</span><span class="n">x_h</span><span class="p">,</span> 
+                    <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+            
+            <span class="c1"># remap the image w.r.t. the projected pixels</span>
+            <span class="n">x_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x_prime_h</span><span class="p">[:</span><span class="mi">2</span><span class="p">,:,:],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">I_t_prime_projected</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span>
+                    <span class="n">src</span><span class="o">=</span><span class="n">I_t_prime</span><span class="p">,</span> 
+                    <span class="n">map1</span><span class="o">=</span><span class="n">x_prime</span><span class="p">,</span> 
+                    <span class="n">map2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                    <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_NEAREST</span><span class="p">,</span> 
+                    <span class="n">borderValue</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">])</span>
+            
+            <span class="c1"># compute the photo constraint term (pc)</span>
+            <span class="n">color_difference</span> <span class="o">=</span> <span class="n">L2_norm</span><span class="p">(</span><span class="n">I_t</span><span class="p">,</span> <span class="n">I_t_prime_projected</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">pc</span> <span class="o">=</span> <span class="n">sigma_c</span><span class="o">/</span><span class="p">(</span><span class="n">sigma_c</span> <span class="o">+</span> <span class="n">color_difference</span><span class="p">)</span>
+            
+            <span class="c1"># check if bundle optimization is required</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sequence</span><span class="o">.</span><span class="n">use_bundle</span><span class="p">():</span>
+                <span class="c1"># update likelyhood using photo-consistency contraint</span>
+                <span class="n">L</span><span class="p">[</span><span class="n">level</span><span class="p">,:,:]</span> <span class="o">+=</span> <span class="n">pc</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># geometric-consistency constraint ----------------------------</span>
+                
+                <span class="c1"># compute candidate pixels using previously estimated depth values</span>
+                <span class="n">depthmap</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">D</span><span class="p">[</span><span class="n">t_prime</span><span class="p">]</span> <span class="c1"># get prev. estimated depth </span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span>
+                        <span class="n">src</span><span class="o">=</span><span class="n">depthmap</span><span class="p">,</span> 
+                        <span class="n">map1</span><span class="o">=</span><span class="n">x_prime</span><span class="p">,</span> 
+                        <span class="n">map2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                        <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_NEAREST</span><span class="p">,</span> 
+                        <span class="n">borderValue</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">levels</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span>
+                
+                <span class="c1"># fill the matrix d with the conjugate pixels&#39; depth value indices</span>
+                <span class="c1">#np.take(depth_values, depth_indices_projected, out=d)</span>
+                
+                <span class="c1"># project back from t_prime to t using prev. estimated depth values</span>
+                <span class="n">projected_x_prime_h</span> <span class="o">=</span> <span class="n">conujugate_coordinates</span><span class="p">(</span>
+                        <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
+                        <span class="n">pose1</span><span class="o">=</span><span class="n">t_prime</span><span class="p">,</span>
+                        <span class="n">pose2</span><span class="o">=</span><span class="n">t</span><span class="p">,</span>
+                        <span class="n">coorsxy</span><span class="o">=</span><span class="n">x_prime_h</span><span class="p">,</span>
+                        <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+    
+                <span class="c1"># compute norm of diff. between original and projected coord </span>
+                <span class="n">color_difference_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">x_h</span> <span class="o">-</span> <span class="n">projected_x_prime_h</span><span class="p">),</span> 
+                    <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                
+                <span class="c1"># compute the bundle optimization term (pv)</span>
+                <span class="n">pv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">color_difference_norm</span><span class="o">/</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">sigma_d</span><span class="o">*</span><span class="n">sigma_d</span><span class="p">))</span>
+                
+                <span class="c1"># update likelyhood using photo and geometric constraints</span>
+                <span class="n">L</span><span class="p">[</span><span class="n">level</span><span class="p">,:,:]</span> <span class="o">+=</span> <span class="n">pc</span><span class="o">*</span><span class="n">pv</span>
+                
+    <span class="c1"># compute and return the computed energy values</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reciprocal</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">u</span><span class="o">*</span><span class="n">L</span></div>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="conujugate_coordinates"><a class="viewcode-back" href="../compute_energy.html#compute_energy.conujugate_coordinates">[docs]</a><span class="k">def</span> <span class="nf">conujugate_coordinates</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">pose1</span><span class="p">,</span> <span class="n">pose2</span><span class="p">,</span> <span class="n">coorsxy</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the image pixel coordinates with respect of two different camera poses.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sequence : utils.Sequence</span>
+<span class="sd">        Sequence object containing the camera parameters.</span>
+<span class="sd">     </span>
+<span class="sd">    pose1 : int</span>
+<span class="sd">        Index of the first pose in *camera*</span>
+<span class="sd">       </span>
+<span class="sd">    pose2 : int</span>
+<span class="sd">        Index of the second pose in *camera*</span>
+<span class="sd">       </span>
+<span class="sd">    coorsxy : numpy array, type float32</span>
+<span class="sd">        Homogeneous camera coordinates of shape [3, h, w], the first axis</span>
+<span class="sd">        represents the coordinate itself.</span>
+<span class="sd">        </span>
+<span class="sd">    d : numpy array, type float32</span>
+<span class="sd">        Array of shape [h,w] that indicates the disparity to use for a </span>
+<span class="sd">        certain pixel while computing the conjugate point.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy array, type float32</span>
+<span class="sd">        Array  with shape [3, h, w] representing the conjugate coordinates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># check input validity ----------------------------------------------------</span>
+    <span class="c1">#assert type(pose1) == int and 0 &lt;= pose1 &lt; len(camera)</span>
+    <span class="c1">#assert type(pose2) == int and 0 &lt;= pose2 &lt; len(camera)</span>
+    <span class="c1">#assert isinstance(camera, utils.Camera)</span>
+    
+    <span class="n">K</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">K</span>
+    <span class="n">R1</span><span class="p">,</span> <span class="n">T1</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">Rs</span><span class="p">[</span><span class="n">pose1</span><span class="p">],</span> <span class="n">sequence</span><span class="o">.</span><span class="n">Ts</span><span class="p">[</span><span class="n">pose1</span><span class="p">]</span>
+    <span class="n">R2</span><span class="p">,</span> <span class="n">T2</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">Rs</span><span class="p">[</span><span class="n">pose2</span><span class="p">],</span> <span class="n">sequence</span><span class="o">.</span><span class="n">Ts</span><span class="p">[</span><span class="n">pose2</span><span class="p">]</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">sequence</span><span class="o">.</span><span class="n">width</span>
+    
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coorsxy</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    
+    <span class="k">assert</span> <span class="n">coorsxy</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+    <span class="k">assert</span> <span class="n">d</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+    
+    <span class="k">assert</span> <span class="n">coorsxy</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    
+    <span class="c1"># compute pixel candidates w.r.t. the given camera parameters -------------</span>
+    <span class="n">coorsxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coorsxy</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">depth</span> <span class="o">=</span> <span class="p">(</span><span class="n">T1</span><span class="o">-</span><span class="n">T2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">d</span> 
+    <span class="n">remap</span> <span class="o">=</span> <span class="p">(</span><span class="n">K</span><span class="o">*</span><span class="n">R2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">R1</span><span class="o">*</span><span class="n">K</span><span class="o">.</span><span class="n">I</span><span class="p">)</span> <span class="o">*</span> <span class="n">coorsxy</span> <span class="o">+</span> <span class="n">depth</span><span class="p">)</span>
+    <span class="n">remap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">remap</span><span class="p">,</span> <span class="n">remap</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">remap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">remap</span><span class="p">),</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">remap</span></div>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="L2_norm"><a class="viewcode-back" href="../compute_energy.html#compute_energy.L2_norm">[docs]</a><span class="k">def</span> <span class="nf">L2_norm</span><span class="p">(</span><span class="n">img_a</span><span class="p">,</span> <span class="n">img_b</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the norm of the per-pixel difference between the two images.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img_a :  numpy array, type float32</span>
+<span class="sd">        First image, shape [h, w, 3]</span>
+<span class="sd">        </span>
+<span class="sd">    img_b : numpy array, type float32</span>
+<span class="sd">        Second image, shape [h, w, 3]</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy array </span>
+<span class="sd">        Array representing the norm of the difference between the two images.</span>
+<span class="sd">        The array has shape [h, w, 1] if ``keepdims==True``, [h, w] otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img_a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img_b</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    
+    <span class="k">assert</span> <span class="n">img_a</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+    <span class="k">assert</span> <span class="n">img_b</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">img_a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">img_b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="n">img_b</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">img_a</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">img_a</span><span class="o">-</span><span class="n">img_b</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="n">keepdims</span><span class="p">))</span></div>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="homogeneous_coord_grid"><a class="viewcode-back" href="../compute_energy.html#compute_energy.homogeneous_coord_grid">[docs]</a><span class="k">def</span> <span class="nf">homogeneous_coord_grid</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Compute grid of homogeneous coordinates having three dimensions.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : int</span>
+<span class="sd">        height</span>
+<span class="sd">    w : int</span>
+<span class="sd">        width</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    out : numpy array, type float32</span>
+<span class="sd">        Grid of homogeneous coordinates with shape [3, h, w], whose first</span>
+<span class="sd">        axis indicates the coordinate itself, that is,</span>
+<span class="sd">        </span>
+<span class="sd">        | ``out[0, y, :] = y``</span>
+<span class="sd">        | ``out[1, :, x] = x``</span>
+<span class="sd">        | ``out[2, :, :] = 1``</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span>
+    
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">))</span>
+    
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> 
+               <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> 
+               <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="lambda_factor"><a class="viewcode-back" href="../compute_energy.html#compute_energy.lambda_factor">[docs]</a><span class="k">def</span> <span class="nf">lambda_factor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Compute the smoothness weights for the LBP algorithm.</span>
+
+<span class="sd">    This functions computes the edge weights that will be used during the</span>
+<span class="sd">    executiong of the *Loopy Belief Propagation* algorithm.</span>
+<span class="sd">    The values are inversely proportional to the difference between </span>
+<span class="sd">    adjacent pixels&#39; colors.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    the math formula used to compute the lambda factor for an edge `(x,y)`, </span>
+<span class="sd">    is given by</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\lambda(x,y) = w_s\\cdot \\frac{u_\\lambda(x)}{||I(x) - I(y)|| + \\epsilon},</span>
+
+<span class="sd">    with :math:`w_s` and :math:`\\epsilon` positive constant values, :math:`I(x)`</span>
+<span class="sd">    the image&#39;s color at pixel `x`, and :math:`u_\\lambda(x)` is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        u_\\lambda(x) = {|N(x)|}\\big/{\\sum_{y&#39;\\in N(x)} \\frac{1}{||I(x) - I(y&#39;)||+\\epsilon}}.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    lbp.lbp : *Loopy Belief Propagation* implementation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : numpy array, type float32</span>
+<span class="sd">        Array representing an image (so with shape [`h`, `w`, 3]).</span>
+<span class="sd">     </span>
+<span class="sd">    Returns </span>
+<span class="sd">    -------</span>
+<span class="sd">    list of numpy arrays, type float32</span>
+<span class="sd">      Said list contains four smoothness weight arrays with shape </span>
+<span class="sd">      [`h`, `w`]; one matrix per neighbor direction. More precisely, </span>
+<span class="sd">      if we denote the four matrices as :math:`M_{up}, M_{down}, M_{left}, M_{right}`,</span>
+<span class="sd">      we have that</span>
+
+<span class="sd">      * :math:`M_{up}[y,x] = \\lambda((y,x), (y+1, x)),`</span>
+<span class="sd">      * :math:`M_{down}[y,x] = \\lambda((y,x), (y-1, x)),`</span>
+<span class="sd">      * :math:`M_{left}[y,x] = \\lambda((y,x), (y, x+1)),`</span>
+<span class="sd">      * :math:`M_{right}[y,x] = \\lambda((y,x), (y, x-1)).`</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">image</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    
+    <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">directions</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">DIRECTIONS</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">directions</span><span class="p">)</span>
+    <span class="n">lambda_factor</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">directions</span><span class="p">)</span>
+    
+    <span class="n">up</span><span class="p">,</span> <span class="n">do</span><span class="p">,</span> <span class="n">le</span><span class="p">,</span> <span class="n">ri</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span><span class="n">utils</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">LEFT</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">RIGHT</span>
+    <span class="n">img</span><span class="p">[</span><span class="n">up</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">AFFINE_DIR</span><span class="p">[</span><span class="n">do</span><span class="p">],</span> <span class="n">dsize</span><span class="o">=</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+    <span class="n">img</span><span class="p">[</span><span class="n">do</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">AFFINE_DIR</span><span class="p">[</span><span class="n">up</span><span class="p">],</span> <span class="n">dsize</span><span class="o">=</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+    <span class="n">img</span><span class="p">[</span><span class="n">le</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">AFFINE_DIR</span><span class="p">[</span><span class="n">ri</span><span class="p">],</span> <span class="n">dsize</span><span class="o">=</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+    <span class="n">img</span><span class="p">[</span><span class="n">ri</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">AFFINE_DIR</span><span class="p">[</span><span class="n">le</span><span class="p">],</span> <span class="n">dsize</span><span class="o">=</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+    <span class="n">u_denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="c1"># compute partial lambda factor and the denominator for the u_lambda term</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">directions</span><span class="p">:</span>
+        <span class="n">inverse_color_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">L2_norm</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">img</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="n">u_denominator</span> <span class="o">+=</span> <span class="n">inverse_color_diff</span> <span class="c1"># compute denominator for u_lambda term</span>
+        <span class="n">lambda_factor</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">inverse_color_diff</span> <span class="c1"># compute partial lambda factor</span>
+    
+    <span class="c1"># compute u_lambda term (approximation of the term, incorrect on image borders)</span>
+    <span class="n">u_lambda</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">/</span><span class="n">u_denominator</span>
+    
+    <span class="c1"># compute final lambda smoothness weight for each edge</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">directions</span><span class="p">:</span>
+        <span class="n">lambda_factor</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ws</span><span class="o">*</span><span class="n">u_lambda</span><span class="o">*</span><span class="n">lambda_factor</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">lambda_factor</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">IM_Project1_2018-2019</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick-Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config_file.html">Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../estimate.html">Module <em>estimate.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../compute_energy.html">Module <em>compute_energy.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lbp.html">Module <em>lbp.py</em></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">Module <em>utils.py</em></a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giorgio Mariani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
