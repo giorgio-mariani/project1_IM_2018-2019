@@ -209,7 +209,7 @@ def lbp(data_cost, edge_weights, step=1.0, eta=1.0, inter_it=2, intra_it=2, scal
     B = D[0][0:height,0:width]
     for i in utils.DIRECTIONS:
         B += M[i]
-    return np.uint16(B.argmin(axis=-1))
+    return np.uint32(B.argmin(axis=-1))
 
 def _increase_scale(M, scale=4):
     for i in range(len(M)):

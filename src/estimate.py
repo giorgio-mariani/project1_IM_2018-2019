@@ -53,6 +53,11 @@ def estimate(configparams):
     
     # create output directory (TODO remove if an exception occur and the folder is empty)
     os.mkdir(out_dir)
+    depth_values = np.linspace(
+        sequence.depth_min,
+        sequence.depth_max,
+        sequence.depth_levels,
+        dtype=np.float32)
     try:
         for i in range(sequence.start, sequence.end):
             print "Estimating depth-map for frame ", str(i)
@@ -60,6 +65,7 @@ def estimate(configparams):
             depthmap_filename = os.path.join(out_dir, "depth_"+str(i).zfill(4))
 
             # save depth info            
+            depthmap = np.take(depth_values, depthmap)
             np.save(depthmap_filename, depthmap)
             
             # save picture of image (useful for debug purposes)

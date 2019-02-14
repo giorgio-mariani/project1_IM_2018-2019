@@ -3,6 +3,7 @@ import os
 
 import cv2 
 import numpy as np
+from PIL import Image
 
 import json
 
@@ -147,6 +148,9 @@ class Sequence():
             depthmap_name = os.path.join(directory, "depth_"+str(i).zfill(4)+".npy")
             try:
                 depthmap = np.load(depthmap_name)
+                depthmap = np.array(Image.fromarray(depthmap, mode='F').resize(
+                    (self.width,self.height),
+                    resample=Image.BILINEAR))
                 D.append(depthmap)
             except IOError as e:
                 raise StandardError("Depth-map file "+depthmap_name+" not found in depth sequence directory ("+directory+")!")
@@ -219,7 +223,7 @@ def parse_configfile(filename):
     try:
         with open(filename,'r') as fp:
             jobj = json.load(fp=fp)
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise StandardError("File "+str(filename)+"not found!")
     except IOError as e:
         raise StandardError("Unable to load file "+str(filename)+"!")
@@ -255,7 +259,6 @@ def parse_configfile(filename):
 
 ###############################################################################
 
-'''
 def show_image(img, secs=0, close_after=True):
     cv2.imshow('image', cv2.UMat(img))
     cv2.waitKey(secs)
@@ -289,5 +292,5 @@ def load_image_depth(filename, width, height):
             h = h + 1 if w==0 else h 
             disp = read_float()
     return I
-'''
+
 ###############################################################################

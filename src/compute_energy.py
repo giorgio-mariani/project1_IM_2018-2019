@@ -128,16 +128,16 @@ def compute_energy_data(
                 # geometric-consistency constraint ----------------------------
                 
                 # compute candidate pixels using previously estimated depth values
-                depth_indices = sequence.D[t_prime] # get prev. estimated depth 
-                depth_indices_projected = cv2.remap(
-                        src=depth_indices, 
+                depthmap = sequence.D[t_prime] # get prev. estimated depth 
+                d = cv2.remap(
+                        src=depthmap, 
                         map1=x_prime, 
                         map2=None, 
                         interpolation=cv2.INTER_NEAREST, 
                         borderValue=int(levels/2.0))
                 
                 # fill the matrix d with the conjugate pixels' depth value indices
-                np.take(depth_values, depth_indices_projected, out=d)
+                #np.take(depth_values, depth_indices_projected, out=d)
                 
                 # project back from t_prime to t using prev. estimated depth values
                 projected_x_prime_h = conujugate_coordinates(
