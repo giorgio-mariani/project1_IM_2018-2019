@@ -1,3 +1,0 @@
-numpy==1.15
-tqdm==4.26
-opencv-contrib-python
