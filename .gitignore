@@ -2,7 +2,7 @@ data/**
 src/depths/**
 other/opencv/
 other/original_software/
-other/articles
+other/articles/
 **.pyc
 **/.vscode/
 **/.depthmaps_tmp
